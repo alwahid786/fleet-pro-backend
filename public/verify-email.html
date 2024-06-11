@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Email Verification</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: "Roboto", sans-serif;
+                background-color: #f5f5f5;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            .main {
+                background-color: #ffffff;
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+            h1 {
+                color: #333;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            p {
+                color: #666;
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            #verifyButton {
+                background-color: #4caf50;
+                color: white;
+                padding: 14px 25px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                border-radius: 4px;
+                transition: background-color 0.3s ease;
+            }
+            #verifyButton:hover {
+                background-color: #45a049;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main">
+            <h1>Email Verification</h1>
+            <p>Please click the button below to verify your email address.</p>
+            <a id="verifyButton" href="#" target="_blank">Verify Email</a>
+        </div>
+        <script>
+            document.getElementById("verifyButton").href = new URLSearchParams(window.location.search).get(
+                "verificationUrl"
+            );
+        </script>
+    </body>
+</html>
