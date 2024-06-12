@@ -4,9 +4,7 @@ export interface DriverTypes {
     licenseExpiry: Date;
     fleatNumber: number;
     truckId: string;
-    image: {
-        url: string;
-        public_id: string;
-    };
     phoneNumber: string;
 }
+
+export type OptionalDriverTypes = Partial<DriverTypes>;
