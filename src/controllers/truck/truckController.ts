@@ -4,13 +4,15 @@ import { Driver } from "../../models/driverModel/driver.model.js";
 import { Truck } from "../../models/truckModel/truck.model.js";
 import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
 import { TryCatch } from "../../utils/tryCatch.js";
+import { OptionalTruckTypes, TruckTypes } from "../../types/truckTypes.js";
+import { Request } from "express";
 
 //
 // create new truck
 //
-const createNewTruck = TryCatch(async (req, res, next) => {
+const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, next) => {
     const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
-    const image = req.file;
+    const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
     if (!truckName || !fleetNumber || !plateNumber || !deviceId)
         return next(createHttpError(400, "All Required fields are Not Provided!"));
@@ -49,13 +51,13 @@ const getAllTrucks = TryCatch(async (req, res, next) => {
 //
 // update truck details
 //
-const updateTruck = TryCatch(async (req, res, next) => {
+const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, res, next) => {
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
 
     // get data and validate
     const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
-    const image = req.file;
+    const image: Express.Multer.File | undefined = req.file;
     if (!truckName && !fleetNumber && !plateNumber && !deviceId && !image)
         return next(createHttpError(400, "Not Any Field Is Provided!"));
 
@@ -85,6 +87,18 @@ const updateTruck = TryCatch(async (req, res, next) => {
     // update user and send response
     await truck.save();
     res.status(200).json({ success: true, message: "Truck Updated Successfully" });
+});
+
+//
+// get single truck
+//
+const getSingleTruck = TryCatch(async (req, res, next) => {
+    const { truckId } = req.params;
+    if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
+    // get truck
+    const truck = await Truck.findById(truckId).populate("assignedTo", "firstName lastName");
+    if (!truck) return next(createHttpError(404, "Truck Not Found"));
+    res.status(200).json({ success: true, truck });
 });
 
 //
@@ -155,4 +169,12 @@ const removeTruckAssignment = TryCatch(async (req, res, next) => {
     res.status(200).json({ success: true, message: "Truck Assignment Removed Successfully" });
 });
 
-export { assignTruckToDriver, createNewTruck, deleteTruck, getAllTrucks, removeTruckAssignment, updateTruck };
+export {
+    assignTruckToDriver,
+    createNewTruck,
+    deleteTruck,
+    getAllTrucks,
+    removeTruckAssignment,
+    updateTruck,
+    getSingleTruck,
+};

@@ -2,6 +2,7 @@ import {
     createNewDriver,
     deleteDriver,
     getAllDrivers,
+    getSingleDriver,
     updateDriver,
 } from "../../controllers/driver/driverController.js";
 import { auth } from "../../middlewares/auth.js";
@@ -13,6 +14,7 @@ export const driverRoutes = (app: any) => {
 
     // update drivers and delete
     app.route("/api/driver/single/:driverId")
+        .get(auth, getSingleDriver)
         .put(auth, singleUpload, updateDriver)
         .delete(auth, deleteDriver);
 

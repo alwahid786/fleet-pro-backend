@@ -3,6 +3,7 @@ import {
     createNewTruck,
     deleteTruck,
     getAllTrucks,
+    getSingleTruck,
     removeTruckAssignment,
     updateTruck,
 } from "../../controllers/truck/truckController.js";
@@ -14,7 +15,10 @@ export const truckRoutes = (app: any) => {
     app.post("/api/truck/create", auth, singleUpload, createNewTruck);
 
     // update and delete truck
-    app.route("/api/truck/single/:truckId").put(auth, singleUpload, updateTruck).delete(auth, deleteTruck);
+    app.route("/api/truck/single/:truckId")
+        .get(auth, getSingleTruck)
+        .put(auth, singleUpload, updateTruck)
+        .delete(auth, deleteTruck);
 
     // get all trucks
     app.get("/api/truck/all", auth, getAllTrucks);

@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { TryCatch } from "../../utils/tryCatch.js";
-import { DriverTypes } from "../../types/driverTypes.js";
+import { DriverTypes, OptionalDriverTypes } from "../../types/driverTypes.js";
 import createHttpError from "http-errors";
 import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
 import { Driver } from "../../models/driverModel/driver.model.js";
@@ -12,7 +12,7 @@ import { isValidObjectId } from "mongoose";
 const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, next) => {
     // get data and validate
     const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber } = req.body;
-    const image = req.file;
+    const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
     if (!firstName || !fleetNumber || !lastName || !licenseExpiry || !phoneNumber)
         return next(createHttpError(400, "All Required fields are Not Provided!"));
@@ -47,16 +47,29 @@ const getAllDrivers = TryCatch(async (req, res, next) => {
     if (!drivers) return next(createHttpError(400, "Error While Fetching Drivers"));
     res.status(200).json({ success: true, message: "Drivers Fetched Successfully", drivers });
 });
+
+//
+// get single drive
+//
+const getSingleDriver = TryCatch(async (req, res, next) => {
+    const { driverId } = req.params;
+    if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
+    // get driver
+    const driver = await Driver.findById(driverId);
+    if (!driver) return next(createHttpError(404, "Driver Not Found"));
+    res.status(200).json({ success: true, driver });
+});
+
 //
 // update driver
 //
-const updateDriver = TryCatch(async (req, res, next) => {
+const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>, res, next) => {
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
     // get data and validate
     const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber } = req.body;
     console.log("req.body", req.body);
-    const image = req.file;
+    const image: Express.Multer.File | undefined = req.file;
     if (!firstName && !fleetNumber && !lastName && !licenseExpiry && !phoneNumber && !image)
         return next(createHttpError(400, "Please add Something to Update"));
 
@@ -91,6 +104,7 @@ const updateDriver = TryCatch(async (req, res, next) => {
     if (!updatedDriver) return next(createHttpError(400, "Error While Updating Driver"));
     res.status(200).json({ success: true, message: "Driver Updated Successfully", updatedDriver });
 });
+
 //
 // delete driver
 //
@@ -108,4 +122,4 @@ const deleteDriver = TryCatch(async (req, res, next) => {
     res.status(200).json({ success: true, message: "Driver Deleted Successfully" });
 });
 
-export { createNewDriver, getAllDrivers, updateDriver, deleteDriver };
+export { createNewDriver, getAllDrivers, updateDriver, deleteDriver, getSingleDriver };
