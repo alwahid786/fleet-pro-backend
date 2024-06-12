@@ -17,18 +17,13 @@ import { TryCatch } from "../../utils/tryCatch.js";
 const register = TryCatch(async (req: Request<{}, {}, User>, res, next) => {
     // get all body data
     const { email, password } = req.body;
-
     // validate user data
     if (!email || !password) return next(createHttpError(400, "All fields are required!"));
-
     // check user email is already exists
     const emailExists = await Auth.exists({ email });
-
     if (emailExists) return next(createHttpError(400, "This email is already taken"));
-
     // hash password using bcrypt
     const hashPassword = await bcrypt.hash(password, 10);
-
     // create user
     const user = await Auth.create({ email, password: hashPassword });
     if (!user) return next(createHttpError(400, "Some Error While Creating User"));
@@ -41,20 +36,15 @@ const register = TryCatch(async (req: Request<{}, {}, User>, res, next) => {
     const message = `Please click the link below to verify your email address: ${verificationUrl}`;
     const isMailSent = await sendMail(user?.email, "Email Verification", message);
     if (!isMailSent) return next(createHttpError(500, "Some Error Occurred While Sending Mail"));
-
     // access token
     const accessToken = await JWTService().accessToken(String(user._id));
-
     // refresh token
     const refreshToken = await JWTService().accessToken(String(user._id));
-
     // store access token in database
     await JWTService().storeRefreshToken(String(accessToken));
-
     //store access token and refresh token in cookie
     res.cookie("accessToken", accessToken);
     res.cookie("refreshToken", refreshToken);
-
     return res.status(201).json({ message: "User created successfully" });
 });
 //
@@ -83,12 +73,10 @@ const verifyRegistration = TryCatch(async (req: Request<{}, {}, { token: string 
 const login = TryCatch(async (req, res, next) => {
     // get all body data
     const { email, password } = req.body;
-
     // validate user data
     if (!email || !password) return next(createHttpError(400, "All fields are required!"));
     // match user
     const user = await Auth.findOne({ email });
-
     if (user) {
         // compare password
         const matchPwd = await bcrypt.compare(password, user.password);
@@ -101,8 +89,7 @@ const login = TryCatch(async (req, res, next) => {
         res.cookie("token", token);
         return res.status(200).json({
             success: true,
-            message: "You are logged in",
-            token: token,
+            message: "You are logged in successfully",
         });
     }
     return res.status(400).json({ success: false, message: "oops please signup" });
@@ -148,7 +135,6 @@ const resetPassword = TryCatch(async (req, res, next) => {
     } catch (err) {
         return res.status(400).sendFile(path.join(__dirName, "../../public/verificationFailed.html"));
     }
-
     const user = await Auth.findById(verifiedToken).select("+password");
     if (!user) return next(createHttpError(404, "Invalid or Expired Token"));
     const hashPassword = await bcrypt.hash(newPassword, 10);

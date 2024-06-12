@@ -1,17 +1,21 @@
 import { Request } from "express";
-import { TryCatch } from "../../utils/tryCatch.js";
-import { DriverTypes, OptionalDriverTypes } from "../../types/driverTypes.js";
 import createHttpError from "http-errors";
-import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
-import { Driver } from "../../models/driverModel/driver.model.js";
 import { isValidObjectId } from "mongoose";
+import { Driver } from "../../models/driverModel/driver.model.js";
+import { DriverTypes, OptionalDriverTypes } from "../../types/driverTypes.js";
+import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
+import { TryCatch } from "../../utils/tryCatch.js";
 
 //
 // Create a Driver
 //
 const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, next) => {
+    const ownerId = req.user?.ownerId;
+    if (!ownerId) return next(createHttpError(400, "Please Login to create a Driver"));
+
     // get data and validate
     const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber } = req.body;
+    // if (!ownerId) return next(createHttpError(400, "Please add ownerId"));
     const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
     if (!firstName || !fleetNumber || !lastName || !licenseExpiry || !phoneNumber)
@@ -26,6 +30,7 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
 
     // create driver
     const driver = await Driver.create({
+        ownerId,
         firstName,
         fleetNumber,
         lastName,
@@ -37,7 +42,7 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
         },
     });
     if (!driver) return next(createHttpError(400, "Error While Creating Driver"));
-    res.status(201).json({ success: true, message: "Driver Created Successfully", driver });
+    res.status(201).json({ success: true, message: "Driver Created Successfully" });
 });
 //
 // get all drivers
@@ -122,4 +127,4 @@ const deleteDriver = TryCatch(async (req, res, next) => {
     res.status(200).json({ success: true, message: "Driver Deleted Successfully" });
 });
 
-export { createNewDriver, getAllDrivers, updateDriver, deleteDriver, getSingleDriver };
+export { createNewDriver, deleteDriver, getAllDrivers, getSingleDriver, updateDriver };

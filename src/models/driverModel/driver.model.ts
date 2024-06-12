@@ -8,6 +8,7 @@ const imageSchema = new Schema({
 
 const driverSchema = new Schema<SchemaDriverTypes>(
     {
+        ownerId: { type: String, required: true },
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },
         licenseExpiry: { type: Date, required: true },

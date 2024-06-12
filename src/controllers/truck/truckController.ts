@@ -11,6 +11,10 @@ import { Request } from "express";
 // create new truck
 //
 const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, next) => {
+    const ownerId = req.user?.ownerId;
+    if (!ownerId) return next(createHttpError(400, "Please Login to create a Driver"));
+
+    // get data and validate
     const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
     const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
@@ -26,6 +30,7 @@ const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, ne
 
     // create truck
     const truck = await Truck.create({
+        ownerId,
         truckName,
         fleetNumber,
         plateNumber,
@@ -36,7 +41,7 @@ const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, ne
         },
     });
     if (!truck) return next(createHttpError(400, "Error While Creating Truck"));
-    res.status(201).json({ success: true, message: "Truck Created Successfully", truck });
+    res.status(201).json({ success: true, message: "Truck Created Successfully" });
 });
 
 //

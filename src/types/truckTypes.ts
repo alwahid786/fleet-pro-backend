@@ -10,6 +10,7 @@ export interface TruckTypes {
 export interface SchemaTruckTypes extends TruckTypes {
     image: { url: string; public_id: string };
     assignedTruck: Types.ObjectId | null;
+    ownerId: string;
     status: string;
     createdAt: Date;
     updatedAt: Date;

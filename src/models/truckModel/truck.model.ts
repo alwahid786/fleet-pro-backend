@@ -10,6 +10,7 @@ const imageSchema = new Schema({
 
 const truckSchema = new Schema<SchemaTruckTypes>(
     {
+        ownerId: { type: String, required: true },
         truckName: { type: String, required: true },
         fleetNumber: { type: Number, required: true },
         plateNumber: { type: Number, required: true },

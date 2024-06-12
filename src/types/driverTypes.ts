@@ -10,6 +10,7 @@ export interface DriverTypes {
 export interface SchemaDriverTypes extends DriverTypes {
     image: { url: string; public_id: string };
     assignedTruck: Types.ObjectId | null;
+    ownerId: string;
     createdAt: Date;
     updatedAt: Date;
 }
