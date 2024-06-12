@@ -11,7 +11,7 @@ export interface AuthType {
 export const auth = TryCatch(async (req: Request<{}, {}, AuthType>, res, next) => {
     const token = req.cookies.token;
     if (!token) return next(createHttpError(401, "Unauthorized user please login"));
-    const verifyToken = jwt.verify(token, config.getEnv("JWT_KEY")!);
+    const verifyToken = jwt.verify(token, config.getEnv("SIGN_ACCESS_TOKEN")!);
     req.body.userId = verifyToken as string;
     next();
 });
