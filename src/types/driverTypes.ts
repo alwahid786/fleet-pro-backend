@@ -2,7 +2,7 @@ export interface DriverTypes {
     firstName: string;
     lastName: string;
     licenseExpiry: Date;
-    fleatNumber: number;
+    fleetNumber: number;
     truckId: string;
     phoneNumber: string;
 }

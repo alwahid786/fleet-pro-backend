@@ -11,10 +11,10 @@ import { isValidObjectId } from "mongoose";
 //
 const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, next) => {
     // get data and validate
-    const { firstName, fleatNumber, lastName, licenseExpiry, phoneNumber } = req.body;
+    const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber } = req.body;
     const image = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
-    if (!firstName || !fleatNumber || !lastName || !licenseExpiry || !phoneNumber)
+    if (!firstName || !fleetNumber || !lastName || !licenseExpiry || !phoneNumber)
         return next(createHttpError(400, "All Required fields are Not Provided!"));
 
     // upload image in cloudinary
@@ -27,7 +27,7 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
     // create driver
     const driver = await Driver.create({
         firstName,
-        fleatNumber,
+        fleetNumber,
         lastName,
         licenseExpiry,
         phoneNumber,
@@ -54,10 +54,10 @@ const updateDriver = TryCatch(async (req, res, next) => {
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
     // get data and validate
-    const { firstName, fleatNumber, lastName, licenseExpiry, phoneNumber } = req.body;
+    const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber } = req.body;
     console.log("req.body", req.body);
     const image = req.file;
-    if (!firstName && !fleatNumber && !lastName && !licenseExpiry && !phoneNumber && !image)
+    if (!firstName && !fleetNumber && !lastName && !licenseExpiry && !phoneNumber && !image)
         return next(createHttpError(400, "Please add Something to Update"));
 
     // get driver
@@ -67,7 +67,7 @@ const updateDriver = TryCatch(async (req, res, next) => {
     // update driver
     if (firstName) driver.firstName = firstName;
     if (lastName) driver.lastName = lastName;
-    if (fleatNumber) driver.fleatNumber = fleatNumber;
+    if (fleetNumber) driver.fleetNumber = fleetNumber;
     if (licenseExpiry) driver.licenseExpiry = licenseExpiry;
     if (phoneNumber) driver.phoneNumber = phoneNumber;
     if (image) {

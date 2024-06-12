@@ -9,10 +9,10 @@ import { TryCatch } from "../../utils/tryCatch.js";
 // create new truck
 //
 const createNewTruck = TryCatch(async (req, res, next) => {
-    const { truckName, fleatNumber, plateNumber, deviceId } = req.body;
+    const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
     const image = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
-    if (!truckName || !fleatNumber || !plateNumber || !deviceId)
+    if (!truckName || !fleetNumber || !plateNumber || !deviceId)
         return next(createHttpError(400, "All Required fields are Not Provided!"));
 
     // upload image in cloudinary
@@ -25,7 +25,7 @@ const createNewTruck = TryCatch(async (req, res, next) => {
     // create truck
     const truck = await Truck.create({
         truckName,
-        fleatNumber,
+        fleetNumber,
         plateNumber,
         deviceId,
         image: {
@@ -54,9 +54,9 @@ const updateTruck = TryCatch(async (req, res, next) => {
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
 
     // get data and validate
-    const { truckName, fleatNumber, plateNumber, deviceId } = req.body;
+    const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
     const image = req.file;
-    if (!truckName && !fleatNumber && !plateNumber && !deviceId && !image)
+    if (!truckName && !fleetNumber && !plateNumber && !deviceId && !image)
         return next(createHttpError(400, "Not Any Field Is Provided!"));
 
     // get truck
@@ -65,7 +65,7 @@ const updateTruck = TryCatch(async (req, res, next) => {
 
     // update truck fields
     if (truckName) truck.truckName = truckName;
-    if (fleatNumber) truck.fleatNumber = fleatNumber;
+    if (fleetNumber) truck.fleetNumber = fleetNumber;
     if (plateNumber) truck.plateNumber = plateNumber;
     if (deviceId) truck.deviceId = deviceId;
     if (image) {

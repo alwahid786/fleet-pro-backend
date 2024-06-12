@@ -9,7 +9,7 @@ const driverSchema = new Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     licenseExpiry: { type: Date, required: true },
-    fleatNumber: { type: String, required: true },
+    fleetNumber: { type: String, required: true },
     image: { type: imageSchema, required: true },
     phoneNumber: { type: String, required: true },
     assignedTruck: { type: Types.ObjectId, ref: "Truck" },
