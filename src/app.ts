@@ -11,6 +11,14 @@ export const app = express();
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
+
+app.get("/", (req, res) => {
+    res.json({
+        success: true,
+        message: "Welcome to Fleet Backend",
+    });
+});
+
 app.use(express.static(path.join(__dirName, "../../../public")));
 // all api routes
 allApiRoutes(app);

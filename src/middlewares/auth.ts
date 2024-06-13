@@ -14,17 +14,16 @@ export interface AuthType {
     ownerId?: string;
 }
 export const auth = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies.token;
-    if (!token) return next(createHttpError(401, "Unauthorized user please login"));
-    let verifyToken;
+    const accessToken = req.cookies?.accessToken;
+    if (!accessToken) return next(createHttpError(401, "Unauthorized user please login"));
+    let verifyToken: any;
     try {
-        verifyToken = jwt.verify(token, config.getEnv("SIGN_ACCESS_TOKEN")!);
+        verifyToken = jwt.verify(accessToken, config.getEnv("ACCESS_TOKEN_SECRET")!);
     } catch (err) {
         return next(createHttpError(401, "Unauthorized user please login"));
     }
     if (verifyToken) {
-        const userId = verifyToken;
-        const user = await Auth.findById(userId);
+        const user = await Auth.findById(verifyToken._id);
         if (!user) return next(createHttpError(401, "Unauthorized user please login"));
         // Set user information in req.user
         req.user = { ownerId: String(user._id) };

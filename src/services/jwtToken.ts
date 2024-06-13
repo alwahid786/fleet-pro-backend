@@ -6,31 +6,44 @@ import createHttpError from "http-errors";
 export const JWTService = () => {
     return {
         // create access token
-        async accessToken(payload: string) {
-            return jwt.sign(payload, config.getEnv("SIGN_ACCESS_TOKEN"));
+        async accessToken(_id: string) {
+            return jwt.sign({ _id }, config.getEnv("ACCESS_TOKEN_SECRET"), {
+                expiresIn: config.getEnv("ACCESS_TOKEN_EXPIRY_TIME"),
+            });
         },
 
         // create refresh token
-        async refreshToken(payload: string) {
-            return jwt.sign(payload, config.getEnv("SIGN_REFRESH_TOKEN"));
+        async refreshToken(_id: string) {
+            return jwt.sign({ _id }, config.getEnv("REFRESH_TOKEN_SECRET"), {
+                expiresIn: config.getEnv("REFRESH_TOKEN_EXPIRY_TIME"),
+            });
         },
 
         // verify access token
         async verifyAccessToken(token: string) {
-            return jwt.verify(token, config.getEnv("SIGN_ACCESS_TOKEN"));
+            return jwt.verify(token, config.getEnv("ACCESS_TOKEN_SECRET"));
         },
 
         // verify refresh token
         async verifyRefreshToken(token: string) {
-            return jwt.verify(token, config.getEnv("SIGN_REFRESH_TOKEN"));
+            return jwt.verify(token, config.getEnv("REFRESH_TOKEN_SECRET"));
         },
 
         // store refresh token in database
         async storeRefreshToken(token: string) {
             try {
                 await Token.create({ token });
-            } catch (error) {
-                throw createHttpError(400, error as string);
+            } catch (error: any) {
+                throw createHttpError(400, error?.message || error || "Failed to store refresh token");
+            }
+        },
+
+        // remove from data base
+        async removeRefreshToken(token: string) {
+            try {
+                await Token.deleteOne({ token });
+            } catch (error: any) {
+                throw createHttpError(400, error?.message || error || "Failed to remove refresh token");
             }
         },
     };

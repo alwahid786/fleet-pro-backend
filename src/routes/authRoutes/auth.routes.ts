@@ -1,5 +1,6 @@
 import {
     forgetPassword,
+    getNewAccessToken,
     login,
     logout,
     register,
@@ -26,4 +27,7 @@ export const authRoutes = (app: any) => {
 
     // logout user
     app.get("/api/auth/logout", auth, logout);
+
+    // get new access token
+    app.get("/api/auth/access-token", getNewAccessToken);
 };

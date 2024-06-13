@@ -13,3 +13,10 @@ export interface CustomRequest extends Request {
 export interface Config {
     [key: string]: string | undefined;
 }
+
+export interface CookiesOptionTypes {
+    httpOnly: boolean;
+    secure: boolean;
+    sameSite: string;
+    maxAge: number;
+}
