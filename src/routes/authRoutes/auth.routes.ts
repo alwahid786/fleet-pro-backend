@@ -10,20 +10,20 @@ import { auth } from "../../middlewares/auth.js";
 
 export const authRoutes = (app: any) => {
     // register user
-    app.post("/api/user/register", register);
+    app.post("/api/auth/register", register);
 
     // verify registration
-    app.get("/api/user/verify", verifyRegistration);
+    app.get("/api/auth/verify", verifyRegistration);
 
     // verify registration
-    app.put("/api/user/forget-password", forgetPassword);
+    app.put("/api/auth/forget-password", forgetPassword);
 
     // verify registration
-    app.post("/api/user/reset-password", resetPassword);
+    app.post("/api/auth/reset-password", resetPassword);
 
     // login user
-    app.post("/api/user/login", login);
+    app.post("/api/auth/login", login);
 
     // logout user
-    app.get("/api/user/logout", auth, logout);
+    app.get("/api/auth/logout", auth, logout);
 };

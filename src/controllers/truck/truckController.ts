@@ -57,7 +57,7 @@ const getAllTrucks = TryCatch(async (req, res, next) => {
 });
 
 //
-// update truck details
+// update single truck
 //
 const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, res, next) => {
     const ownerId = req.user?.ownerId;
@@ -165,7 +165,6 @@ const assignTruckToDriver = TryCatch(async (req, res, next) => {
 //
 // remove assignment from driver
 //
-
 const removeTruckAssignment = TryCatch(async (req, res, next) => {
     const ownerId = req.user?.ownerId;
     // get data and validate

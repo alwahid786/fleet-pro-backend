@@ -1,6 +1,7 @@
 import { authRoutes } from "./authRoutes/auth.routes.js";
 import { driverRoutes } from "./driverRoutes/driver.routes.js";
 import { truckRoutes } from "./truckRoutes/truck.routes.js";
+import { userRoutes } from "./userRoutes/user.routes.js";
 
 export const allApiRoutes = (app: any) => {
     // auth routes
@@ -11,4 +12,7 @@ export const allApiRoutes = (app: any) => {
 
     // create new truck
     truckRoutes(app);
+
+    // user routes
+    userRoutes(app);
 };
