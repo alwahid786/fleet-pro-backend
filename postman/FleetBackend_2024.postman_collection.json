@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "\n{\n    \"email\":\"gyromaster55@gmail.com\",\n    \"password\":\"Hamza.55\"\n}",
+							"raw": "\n{\n    \"email\":\"hamza@gmail.com\",\n    \"password\":\"Hamza.55\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -24,13 +24,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/user/register",
+							"raw": "{{server}}/api/auth/register",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"auth",
 								"register"
 							]
 						}
@@ -52,13 +52,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/user/forget-password",
+							"raw": "{{server}}/api/auth/forget-password",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"auth",
 								"forget-password"
 							]
 						}
@@ -80,23 +80,23 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/user/reset-password?token=eyJhbGciOiJIUzI1NiJ9.NjY2NmU5N2ExMDBlZWRiZWI5NzA3MDNh.Qnjh_iRhaoL7upWeuxrKcmg4D54hrN916iHHrF1VHW4",
+							"raw": "{{server}}/api/auth/reset-password?token=eyJhbGciOiJIUzI1NiJ9.NjY2N2Y4N2Q3N2QyNDQ5ZGU2ZmUzOTcz.JVTkcmucVI-HfpRLf8knatcyk24g8qBmheilBh32CeE",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"auth",
 								"reset-password"
 							],
 							"query": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.NjY2NmU5N2ExMDBlZWRiZWI5NzA3MDNh.Qnjh_iRhaoL7upWeuxrKcmg4D54hrN916iHHrF1VHW4"
+									"value": "eyJhbGciOiJIUzI1NiJ9.NjY2N2Y4N2Q3N2QyNDQ5ZGU2ZmUzOTcz.JVTkcmucVI-HfpRLf8knatcyk24g8qBmheilBh32CeE"
 								},
 								{
 									"key": "password",
-									"value": null,
+									"value": "",
 									"disabled": true
 								}
 							]
@@ -111,7 +111,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\":\"gyromaster55@gmail.com\",\n    \"password\":\"Hamza.555\"\n}",
+							"raw": "{\n    \"email\":\"gyromaster55@gmail.com\",\n    \"password\":\"Hamza.55\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -119,14 +119,542 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/user/login",
+							"raw": "{{server}}/api/auth/login",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "driver",
+			"item": [
+				{
+					"name": "create a new driver",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/hamza/Downloads/driver.png"
+								},
+								{
+									"key": "firstName",
+									"value": "hamza",
+									"type": "text"
+								},
+								{
+									"key": "lastName",
+									"value": "nafasat",
+									"type": "text"
+								},
+								{
+									"key": "licenseExpiry",
+									"value": "2000-12-11",
+									"type": "text"
+								},
+								{
+									"key": "fleetNumber",
+									"value": "2342342353",
+									"type": "text"
+								},
+								{
+									"key": "phoneNumber",
+									"value": "03064155025",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/driver/create",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"create"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all drivers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/driver/all",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update single driver",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "firstName",
+									"value": "ahmed",
+									"type": "text"
+								},
+								{
+									"key": "lastName",
+									"value": "mustafa",
+									"type": "text"
+								},
+								{
+									"key": "licenseExpiry",
+									"value": "2000-11-12",
+									"type": "text"
+								},
+								{
+									"key": "fleatNumber",
+									"value": "2323423414",
+									"type": "text"
+								},
+								{
+									"key": "phoneNumber",
+									"value": "03064155026",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/hamza/Downloads/driver.png",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/driver/single/66699f1141210f55af828305",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"single",
+								"66699f1141210f55af828305"
+							],
+							"query": [
+								{
+									"key": "firstName",
+									"value": "ahmed",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete driver",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/driver/single/66699f1141210f55af828305",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"single",
+								"66699f1141210f55af828305"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get single driver",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/driver/single/66699f1141210f55af828305",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"single",
+								"66699f1141210f55af828305"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "truck",
+			"item": [
+				{
+					"name": "create new truck",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/hamza/Downloads/truck.png"
+								},
+								{
+									"key": "truckName",
+									"value": "local",
+									"type": "text"
+								},
+								{
+									"key": "fleetNumber",
+									"value": "2342342",
+									"type": "text"
+								},
+								{
+									"key": "plateNumber",
+									"value": "234234",
+									"type": "text"
+								},
+								{
+									"key": "deviceId",
+									"value": "2342342sdfasdf342",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/truck/create",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"truck",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update new truck",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/hamza/Downloads/truck.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/truck/single/66695bc8cf058512ea9e8363",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"truck",
+								"single",
+								"66695bc8cf058512ea9e8363"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all trucks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/truck/all",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"truck",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete truck",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/truck/single/6669687238be9af5731e181d",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"truck",
+								"single",
+								"6669687238be9af5731e181d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "assigned truck to driver",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"driverId\":\"666a8bd9ecc94930f3e0f161\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/api/truck/assign/6669a06344779384cf42ade7",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"truck",
+								"assign",
+								"6669a06344779384cf42ade7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove assignment",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/truck/remove-assignment/6669a06344779384cf42ade7",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"truck",
+								"remove-assignment",
+								"6669a06344779384cf42ade7"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "craete new user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/hamza/Downloads/driver.png"
+								},
+								{
+									"key": "firstName",
+									"value": "hamza",
+									"type": "text"
+								},
+								{
+									"key": "lastName",
+									"value": "nafast",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "hamza@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "role",
+									"value": "mern developer",
+									"type": "text"
+								},
+								{
+									"key": "phoneNumber",
+									"value": "03064155025",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/user/create",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
 								"user",
-								"login"
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/user/all",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get single user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/user/single/666ab9573f12d111a7043fee",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"single",
+								"666ab9573f12d111a7043fee"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update single user",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "firstName",
+									"value": "Hamza",
+									"type": "text"
+								},
+								{
+									"key": "lastName",
+									"value": "Nafasat",
+									"type": "text"
+								},
+								{
+									"key": "role",
+									"value": "Mern-Stack-Developer",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "gyromaster@gmailc.om",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/hamza/Downloads/driver.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/user/single/666ab9573f12d111a7043fee",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"single",
+								"666ab9573f12d111a7043fee"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete a user",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/user/single/666ab9573f12d111a7043fee",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"single",
+								"666ab9573f12d111a7043fee"
 							]
 						}
 					},
