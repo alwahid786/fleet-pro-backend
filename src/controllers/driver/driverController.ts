@@ -15,7 +15,6 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
 
     // get data and validate
     const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber } = req.body;
-    // if (!ownerId) return next(createHttpError(400, "Please add ownerId"));
     const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
     if (!firstName || !fleetNumber || !lastName || !licenseExpiry || !phoneNumber)
@@ -48,19 +47,23 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
 // get all drivers
 //
 const getAllDrivers = TryCatch(async (req, res, next) => {
-    const drivers = await Driver.find();
+    const ownerId = req.user?.ownerId;
+    if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
+    const drivers = await Driver.find({ ownerId });
     if (!drivers) return next(createHttpError(400, "Error While Fetching Drivers"));
-    res.status(200).json({ success: true, message: "Drivers Fetched Successfully", drivers });
+    res.status(200).json({ success: true, drivers });
 });
 
 //
 // get single drive
 //
 const getSingleDriver = TryCatch(async (req, res, next) => {
+    const { ownerId } = req.user;
+    if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
     // get driver
-    const driver = await Driver.findById(driverId);
+    const driver = await Driver.findOne({ _id: driverId, ownerId });
     if (!driver) return next(createHttpError(404, "Driver Not Found"));
     res.status(200).json({ success: true, driver });
 });
@@ -69,6 +72,8 @@ const getSingleDriver = TryCatch(async (req, res, next) => {
 // update driver
 //
 const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>, res, next) => {
+    const ownerId = req.user?.ownerId;
+    if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
     // get data and validate
@@ -79,7 +84,7 @@ const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>,
         return next(createHttpError(400, "Please add Something to Update"));
 
     // get driver
-    const driver = await Driver.findById(driverId);
+    const driver = await Driver.findOne({ _id: driverId, ownerId });
     if (!driver) return next(createHttpError(404, "Driver Not Found"));
 
     // update driver
@@ -107,18 +112,24 @@ const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>,
     // save updated driver
     const updatedDriver = await driver.save();
     if (!updatedDriver) return next(createHttpError(400, "Error While Updating Driver"));
-    res.status(200).json({ success: true, message: "Driver Updated Successfully", updatedDriver });
+    res.status(200).json({
+        success: true,
+        message: "Driver Updated Successfully",
+        updatedDriver,
+    });
 });
 
 //
 // delete driver
 //
 const deleteDriver = TryCatch(async (req, res, next) => {
+    const ownerId = req.user?.ownerId;
+    if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
 
     // get driver and delete
-    const driver = await Driver.findByIdAndDelete(driverId);
+    const driver = await Driver.findOneAndDelete({ _id: driverId, ownerId });
     if (!driver) return next(createHttpError(404, "Driver Not Found"));
 
     // remove image from cloudinary

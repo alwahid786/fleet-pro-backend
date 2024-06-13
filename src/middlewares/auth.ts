@@ -30,6 +30,6 @@ export const auth = TryCatch(async (req: Request, res: Response, next: NextFunct
         req.user = { ownerId: String(user._id) };
         next();
     } else {
-        return next(createHttpError(401, "Token does not contain user id"));
+        return next(createHttpError(401, "Unauthorized user please login"));
     }
 });

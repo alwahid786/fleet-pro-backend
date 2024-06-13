@@ -110,7 +110,6 @@ const forgetPassword = TryCatch(async (req, res, next) => {
     // find user
     const user = await Auth.findOne({ email });
     if (!user) return next(createHttpError(404, "Please Provide Correct Email"));
-    await user.save();
     // send mail
     const frontendUrl = config.getEnv("FRONTEND_URL");
     const resetToken = await JWTService().accessToken(String(user._id));

@@ -48,7 +48,10 @@ const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, ne
 // get all trucks
 //
 const getAllTrucks = TryCatch(async (req, res, next) => {
-    const trucks = await Truck.find().populate("assignedTo", "firstName lastName");
+    const ownerId = req.user?.ownerId;
+    if (!ownerId) return next(createHttpError(400, "Please Login to create a Driver"));
+
+    const trucks = await Truck.find({ ownerId }).populate("assignedTo", "firstName lastName");
     if (!trucks) return next(createHttpError(400, "Error While Fetching Trucks"));
     res.status(200).json({ success: true, trucks });
 });
@@ -57,6 +60,8 @@ const getAllTrucks = TryCatch(async (req, res, next) => {
 // update truck details
 //
 const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, res, next) => {
+    const ownerId = req.user?.ownerId;
+
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
 
@@ -67,7 +72,7 @@ const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, r
         return next(createHttpError(400, "Not Any Field Is Provided!"));
 
     // get truck
-    const truck = await Truck.findById(truckId);
+    const truck = await Truck.findOne({ _id: truckId, ownerId });
     if (!truck) return next(createHttpError(404, "Truck Not Found"));
 
     // update truck fields
@@ -98,10 +103,11 @@ const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, r
 // get single truck
 //
 const getSingleTruck = TryCatch(async (req, res, next) => {
+    const ownerId = req.user?.ownerId;
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
     // get truck
-    const truck = await Truck.findById(truckId).populate("assignedTo", "firstName lastName");
+    const truck = await Truck.findOne({ _id: truckId, ownerId }).populate("assignedTo", "firstName lastName");
     if (!truck) return next(createHttpError(404, "Truck Not Found"));
     res.status(200).json({ success: true, truck });
 });
@@ -110,11 +116,12 @@ const getSingleTruck = TryCatch(async (req, res, next) => {
 // delete truck
 //
 const deleteTruck = TryCatch(async (req, res, next) => {
+    const ownerId = req.user?.ownerId;
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
 
     // get truck and delete
-    const truck = await Truck.findByIdAndDelete(truckId);
+    const truck = await Truck.findOneAndDelete({ _id: truckId, ownerId });
     if (!truck) return next(createHttpError(404, "Truck Not Found"));
 
     // remove image from cloudinary
@@ -126,6 +133,7 @@ const deleteTruck = TryCatch(async (req, res, next) => {
 // assign truck to driver
 //
 const assignTruckToDriver = TryCatch(async (req, res, next) => {
+    const ownerId = req.user?.ownerId;
     // get data and validate
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
@@ -134,11 +142,11 @@ const assignTruckToDriver = TryCatch(async (req, res, next) => {
 
     // is driver and truck exist
     const [isDriver, isTruck] = await Promise.all([
-        Driver.exists({ _id: driverId }),
-        Truck.exists({ _id: truckId }),
+        Driver.exists({ _id: driverId, ownerId }),
+        Truck.exists({ _id: truckId, ownerId }),
     ]);
-    if (!isDriver) return next(createHttpError(404, "Driver Not Exist"));
-    if (!isTruck) return next(createHttpError(404, "Truck Not Exist"));
+    if (!isDriver) return next(createHttpError(404, "Driver Not Exist in Your Account"));
+    if (!isTruck) return next(createHttpError(404, "Truck Not Exist in Your Account"));
 
     // check is this truck assigned to any drive
     const isTruckAssigned = await Driver.exists({ assignedTruck: truckId });
@@ -159,12 +167,13 @@ const assignTruckToDriver = TryCatch(async (req, res, next) => {
 //
 
 const removeTruckAssignment = TryCatch(async (req, res, next) => {
+    const ownerId = req.user?.ownerId;
     // get data and validate
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
 
     // check is this truck assigned to any drive
-    const isTruckAssigned = await Driver.exists({ assignedTruck: truckId });
+    const isTruckAssigned = await Driver.exists({ assignedTruck: truckId, ownerId });
     if (!isTruckAssigned) return next(createHttpError(404, "Truck Not Assigned to Any Driver"));
 
     // remove truck assignment from driver
