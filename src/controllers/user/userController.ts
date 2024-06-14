@@ -1,132 +1,176 @@
-import createHttpError from "http-errors";
-import { User } from "../../models/userModel/user.model.js";
-import { OptionalUserTypes, UserTypes } from "../../types/usersTypes.js";
-import { TryCatch } from "../../utils/tryCatch.js";
+import bcrypt from "bcrypt";
 import { Request } from "express";
-import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
-import { isValidObjectId } from "mongoose";
+import createHttpError from "http-errors";
+import path from "node:path";
+import { config } from "../../config/config.js";
+import { __dirName, accessTokenOptions, refreshTokenOptions } from "../../constants/costants.js";
+import { JWTService } from "../../services/jwtToken.js";
+import { sendMail } from "../../services/sendMail.js";
+import { UserTypes } from "../../types/userTypes.js";
+import { TryCatch } from "../../utils/tryCatch.js";
+import { User } from "../../models/userModel/user.model.js";
 
-//
-// create new user
-//
-const createNewUser = TryCatch(async (req: Request<{}, {}, UserTypes>, res, next) => {
-    const ownerId = req.user?.ownerId;
-    const { firstName, lastName, email, role, phoneNumber } = req.body;
-    const image: Express.Multer.File | undefined = req.file;
-    if (!image) return next(createHttpError(400, "Image Not Provided!"));
-    if (!firstName || !lastName || !email || !role || !phoneNumber)
-        return next(createHttpError(400, "All Required fields are Not Provided!"));
+//-------------------
+// register controller
+//-------------------
+const register = TryCatch(async (req: Request<{}, {}, UserTypes>, res, next) => {
+    // get all body data and validate
+    const { email, password } = req.body;
+    if (!email || !password) return next(createHttpError(400, "All fields are required!"));
 
-    // upload image on cloudinary
-    const fileUrl = getDataUri(image);
-    if (!fileUrl.content) return next(createHttpError(400, "Error While Making a Url of File"));
-    const myCloud = await uploadOnCloudinary(fileUrl.content!, "users");
-    if (!myCloud?.public_id || !myCloud?.secure_url)
-        return next(createHttpError(400, "Error While Uploading Image on Cloudinary"));
+    // check user email is already exists
+    const emailExists = await User.exists({ email });
+    if (emailExists) return next(createHttpError(400, "Email Already Exists"));
+    // create user
+    const hashPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({ email, password: hashPassword });
+    if (!user) return next(createHttpError(400, "Some Error While Creating User"));
 
-    // create a user
-    const user = await User.create({
-        ownerId,
-        firstName,
-        lastName,
-        email,
-        role,
-        phoneNumber,
-        image: {
-            url: myCloud.secure_url,
-            public_id: myCloud.public_id,
-        },
-    });
-    if (!user) return next(createHttpError(400, "Error While Creating User"));
-    res.status(201).json({ success: true, message: "User Created Successfully" });
+    // create verification url and send mail to user for verification
+    const verificationToken = await JWTService().accessToken(String(user._id));
+    const backendUrl: string = config.getEnv("SERVER_URL");
+    const verificationUrl = `${backendUrl}/verify-email.html?verificationUrl=${encodeURIComponent(
+        backendUrl + "/api/user/verify?token=" + verificationToken
+    )}`;
+    const message = `Please click the link below to verify your email address: ${verificationUrl}`;
+    const isMailSent = await sendMail(user?.email, "Email Verification", message);
+    if (!isMailSent) return next(createHttpError(500, "Some Error Occurred While Sending Mail"));
+
+    // make and store access and refresh token in cookies
+    const accessToken = await JWTService().accessToken(String(user._id));
+    const refreshToken = await JWTService().refreshToken(String(user._id));
+    await JWTService().storeRefreshToken(String(refreshToken));
+    res.cookie("accessToken", accessToken, accessTokenOptions);
+    res.cookie("refreshToken", refreshToken, refreshTokenOptions);
+
+    return res.status(201).json({ message: "User created successfully" });
 });
-
-//
-// get all users
-//
-const getAllUsers = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
-
-    const users = await User.find({ ownerId });
-    if (!users) return next(createHttpError(400, "Error While Fetching Users"));
-    res.status(200).json({ success: true, users });
-});
-
-//
-// get single user
-//
-const getSingleUser = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
-
-    const { userId } = req.params;
-    if (!isValidObjectId(userId)) return next(createHttpError(400, "Invalid User Id"));
-
-    // get user
-    const user = await User.findOne({ _id: userId, ownerId });
-    if (!user) return next(createHttpError(404, "User Not Found"));
-    res.status(200).json({ success: true, user });
-});
-
-//
-// update single user
-//
-const updateSingleUser = TryCatch(async (req: Request<any, {}, OptionalUserTypes>, res, next) => {
-    const ownerId = req.user?.ownerId;
-
-    const { userId } = req.params;
-    if (!isValidObjectId(userId)) return next(createHttpError(400, "Invalid User Id"));
-
-    const { firstName, lastName, email, role, phoneNumber } = req.body;
-    const image: Express.Multer.File | undefined = req.file;
-    if (!firstName && !lastName && !email && !role && !phoneNumber && !image) {
-        return next(createHttpError(400, "All Required fields are Not Provided!"));
+//--------------------
+// VERIFY REGISTRATION
+//--------------------
+const verifyRegistration = TryCatch(async (req: Request<{}, {}, { token: string }>, res, next) => {
+    const verificationToken: string = req.query?.token as string;
+    if (!verificationToken) return next(createHttpError(400, "Please Provide Verification Token"));
+    let decodedToken: any;
+    try {
+        decodedToken = await JWTService().verifyAccessToken(verificationToken);
+    } catch (err) {
+        return res.status(400).sendFile(path.join(__dirName, "../../../public/verificationFailed.html"));
     }
-
-    // check user exist or not
-    const user = await User.findOne({ _id: userId, ownerId });
-    if (!user) return next(createHttpError(404, "User Not Found"));
-
-    // now update fields according requirements
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-    if (email) user.email = email;
-    if (role) user.role = role;
-    if (phoneNumber) user.phoneNumber = phoneNumber;
-    if (image) {
-        // remove old file
-        if (user?.image?.public_id) await removeFromCloudinary(user.image.public_id);
-        // add new file as a profile image
-        const fileUrl = getDataUri(image);
-        if (!fileUrl.content) return next(createHttpError(400, "Error While Making a Url of File"));
-        const myCloud = await uploadOnCloudinary(fileUrl.content!, "users");
-        if (!myCloud?.public_id || !myCloud?.secure_url)
-            return next(createHttpError(400, "Error While Uploading Image on Cloudinary"));
-        user.image = { url: myCloud.secure_url, public_id: myCloud.public_id };
-    }
-
+    // find user and verify token
+    const user = await User.findById(decodedToken);
+    if (!user)
+        return res.status(400).sendFile(path.join(__dirName, "../../../public/verificationFailed.html"));
     // update user
-    const updatedUser = await user.save();
-    if (!updatedUser) return next(createHttpError(400, "Error While Updating User"));
-    res.status(200).json({ success: true, message: "User Updated Successfully" });
+    await user.save();
+    res.status(200).sendFile(path.join(__dirName, "../../../public/verifiedSuccess.html"));
+});
+//
+// login
+//
+const login = TryCatch(async (req, res, next) => {
+    // get all body data
+    const { email, password } = req.body;
+    if (!email || !password) return next(createHttpError(400, "All fields are required!"));
+
+    // match user
+    const user = await User.findOne({ email });
+    if (user) {
+        // compare password
+        const matchPwd = await bcrypt.compare(password, user.password);
+        if (!matchPwd) return next(createHttpError(400, "Wrong username or password"));
+
+        // make and store access and refresh token in cookies
+        const accessToken = await JWTService().accessToken(String(user._id));
+        const refreshToken = await JWTService().refreshToken(String(user._id));
+        await JWTService().storeRefreshToken(String(refreshToken));
+        res.cookie("accessToken", accessToken, accessTokenOptions);
+        res.cookie("refreshToken", refreshToken, refreshTokenOptions);
+
+        return res.status(200).json({
+            success: true,
+            message: "You are logged in successfully",
+        });
+    }
+    return res.status(400).json({ success: false, message: "oops please signup" });
+});
+//
+// logout
+//
+const logout = TryCatch(async (req, res, next) => {
+    res.clearCookie("accessToken");
+    await JWTService().removeRefreshToken(String(req?.cookies?.refreshToken));
+    res.clearCookie("refreshToken");
+
+    res.status(200).json({ success: true, message: "Logout Successfully" });
+});
+//
+// FORGET PASSWORD
+//
+const forgetPassword = TryCatch(async (req, res, next) => {
+    const { email } = req.body;
+    if (!email) return next(createHttpError(400, "Please Provide Email"));
+    // find user
+    const user = await User.findOne({ email });
+    if (!user) return next(createHttpError(404, "Please Provide Correct Email"));
+    // send mail
+    const frontendUrl = config.getEnv("FRONTEND_URL");
+    const resetToken = await JWTService().accessToken(String(user._id));
+    const message = `Your Reset Password Link: ${frontendUrl}/resetPassword?resetToken=${resetToken}`;
+    const isMailSent = await sendMail(email, "Reset Password", message);
+    if (!isMailSent) return next(createHttpError(500, "Some Error Occurred While Sending Mail"));
+    res.status(200).json({
+        success: true,
+        message: "Reset Password Token sent to your email",
+    });
+});
+//
+// RESET PASSWORD
+//
+const resetPassword = TryCatch(async (req, res, next) => {
+    const resetToken: string = req.query?.token as string;
+    const { newPassword } = req.body;
+    if (!resetToken || !newPassword) return next(createHttpError(400, "Token and New Password are required"));
+    let verifiedToken: any;
+    try {
+        verifiedToken = await JWTService().verifyAccessToken(resetToken);
+    } catch (err) {
+        return res.status(400).sendFile(path.join(__dirName, "../../public/verificationFailed.html"));
+    }
+    const user = await User.findById(verifiedToken).select("+password");
+    if (!user) return next(createHttpError(404, "Invalid or Expired Token"));
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashPassword;
+    await user.save();
+    res.status(200).json({ success: true, message: "Password Reset Successfully" });
+});
+//
+// get new access token
+//
+const getNewAccessToken = TryCatch(async (req, res, next) => {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) return next(createHttpError(401, "Unauthorized user please login"));
+    let verifyToken: any;
+    try {
+        verifyToken = await JWTService().verifyRefreshToken(refreshToken);
+    } catch (err) {
+        return next(createHttpError(401, "Unauthorized user please login"));
+    }
+    if (verifyToken) {
+        const user = await User.findById(verifyToken._id);
+        if (!user) return next(createHttpError(401, "Unauthorized user please login"));
+        const newAccessToken = await JWTService().accessToken(String(user._id));
+        const newRefreshToken = await JWTService().refreshToken(String(user._id));
+        // remove old Refresh Token and save new refresh token
+        await Promise.all([
+            JWTService().removeRefreshToken(String(refreshToken)),
+            JWTService().storeRefreshToken(String(newRefreshToken)),
+        ]);
+
+        res.cookie("accessToken", newAccessToken, accessTokenOptions);
+        res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
+        res.status(200).json({ success: true, message: "New Authentication Created SuccessFully" });
+    }
 });
 
-//
-// delete single user
-//
-const deleteSingleUser = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
-
-    const { userId } = req.params;
-    if (!isValidObjectId(userId)) return next(createHttpError(400, "Invalid User Id"));
-
-    // check user exist or not
-    const user = await User.findOneAndDelete({ _id: userId, ownerId }, { new: true });
-    if (!user) return next(createHttpError(404, "User Not Found"));
-
-    // remove image from cloudinary
-    if (user?.image?.public_id) await removeFromCloudinary(user.image.public_id);
-
-    res.status(200).json({ success: true, message: "User Deleted Successfully" });
-});
-
-export { createNewUser, getAllUsers, getSingleUser, updateSingleUser, deleteSingleUser };
+export { forgetPassword, login, logout, register, resetPassword, verifyRegistration, getNewAccessToken };

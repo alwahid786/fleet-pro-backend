@@ -11,7 +11,7 @@ import { Request } from "express";
 // create new truck
 //
 const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to create a Driver"));
 
     // get data and validate
@@ -48,7 +48,7 @@ const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, ne
 // get all trucks
 //
 const getAllTrucks = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to create a Driver"));
 
     const trucks = await Truck.find({ ownerId }).populate("assignedTo", "firstName lastName");
@@ -60,7 +60,7 @@ const getAllTrucks = TryCatch(async (req, res, next) => {
 // update single truck
 //
 const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
 
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
@@ -103,7 +103,7 @@ const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, r
 // get single truck
 //
 const getSingleTruck = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
     // get truck
@@ -116,7 +116,7 @@ const getSingleTruck = TryCatch(async (req, res, next) => {
 // delete truck
 //
 const deleteTruck = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
 
@@ -133,7 +133,7 @@ const deleteTruck = TryCatch(async (req, res, next) => {
 // assign truck to driver
 //
 const assignTruckToDriver = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     // get data and validate
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
@@ -166,7 +166,7 @@ const assignTruckToDriver = TryCatch(async (req, res, next) => {
 // remove assignment from driver
 //
 const removeTruckAssignment = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     // get data and validate
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));

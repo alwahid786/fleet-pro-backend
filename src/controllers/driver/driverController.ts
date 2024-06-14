@@ -10,7 +10,7 @@ import { TryCatch } from "../../utils/tryCatch.js";
 // Create a Driver
 //
 const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to create a Driver"));
 
     // get data and validate
@@ -47,7 +47,7 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
 // get all drivers
 //
 const getAllDrivers = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
     const drivers = await Driver.find({ ownerId });
     if (!drivers) return next(createHttpError(400, "Error While Fetching Drivers"));
@@ -72,7 +72,7 @@ const getSingleDriver = TryCatch(async (req, res, next) => {
 // update driver
 //
 const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
@@ -123,7 +123,7 @@ const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>,
 // delete driver
 //
 const deleteDriver = TryCatch(async (req, res, next) => {
-    const ownerId = req.user?.ownerId;
+    const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
