@@ -5,9 +5,20 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { __dirName } from "./constants/costants.js";
 import path from "node:path";
+import cors from "cors";
+import { config } from "./config/config.js";
+
+export const corsOptions = {
+    origin: config.getEnv("FRONTEND_URL"),
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 export const app = express();
 
 // middleware
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
