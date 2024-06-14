@@ -2,6 +2,7 @@ import { userRoutes } from "./userRoutes/user.routes.js";
 import { driverRoutes } from "./driverRoutes/driver.routes.js";
 import { employRoutes } from "./employRoutes/employ.routes.js";
 import { truckRoutes } from "./truckRoutes/truck.routes.js";
+import { adminRoutes } from "./adminRoutes/admin.routes.js";
 
 export const allApiRoutes = (app: any) => {
     // user routes
@@ -15,4 +16,7 @@ export const allApiRoutes = (app: any) => {
 
     // user routes
     employRoutes(app);
+
+    // admin routes
+    adminRoutes(app);
 };
