@@ -157,14 +157,33 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/api/auth/access-token",
+							"raw": "{{server}}/api/user/access-token",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"auth",
+								"user",
 								"access-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get my profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/user/profile",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"profile"
 							]
 						}
 					},
@@ -693,6 +712,80 @@
 								"employ",
 								"single",
 								"666ab9573f12d111a7043fee"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "update user profile",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "firstName",
+									"value": "hamza",
+									"type": "text"
+								},
+								{
+									"key": "lastName",
+									"value": "nafasat",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/hamza/Downloads/driver.png"
+								},
+								{
+									"key": "phoneNumber",
+									"value": "01234567891",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "sargodha pakistan",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/api/admin/user-profile/666c1503b9552ffe82c2e14b",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"user-profile",
+								"666c1503b9552ffe82c2e14b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all usrs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/api/admin/users",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"users"
 							]
 						}
 					},
