@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "Auth",
+			"name": "users",
 			"item": [
 				{
 					"name": "register",
@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "\n{\n    \"email\":\"hamza@gmail.com\",\n    \"password\":\"Hamza.55\"\n}",
+							"raw": "\n{\n    \"email\":\"gyromaster55@gmail.com\",\n    \"password\":\"Hamza.55\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -24,13 +24,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/auth/register",
+							"raw": "{{server}}/api/user/register",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"auth",
+								"user",
 								"register"
 							]
 						}
@@ -52,13 +52,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/auth/forget-password",
+							"raw": "{{server}}/api/user/forget-password",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"auth",
+								"user",
 								"forget-password"
 							]
 						}
@@ -80,13 +80,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/auth/reset-password?token=eyJhbGciOiJIUzI1NiJ9.NjY2N2Y4N2Q3N2QyNDQ5ZGU2ZmUzOTcz.JVTkcmucVI-HfpRLf8knatcyk24g8qBmheilBh32CeE",
+							"raw": "{{server}}/api/user/reset-password?token=eyJhbGciOiJIUzI1NiJ9.NjY2N2Y4N2Q3N2QyNDQ5ZGU2ZmUzOTcz.JVTkcmucVI-HfpRLf8knatcyk24g8qBmheilBh32CeE",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"auth",
+								"user",
 								"reset-password"
 							],
 							"query": [
@@ -119,13 +119,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/api/auth/login",
+							"raw": "{{server}}/api/user/login",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"auth",
+								"user",
 								"login"
 							]
 						}
@@ -138,13 +138,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/api/auth/logout",
+							"raw": "{{server}}/api/user/logout",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"auth",
+								"user",
 								"logout"
 							]
 						}
@@ -533,10 +533,10 @@
 			]
 		},
 		{
-			"name": "users",
+			"name": "employs",
 			"item": [
 				{
-					"name": "craete new user",
+					"name": "craete new employ",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -576,13 +576,13 @@
 							]
 						},
 						"url": {
-							"raw": "{{server}}/api/user/create",
+							"raw": "{{server}}/api/employ/create",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"employ",
 								"create"
 							]
 						}
@@ -590,18 +590,18 @@
 					"response": []
 				},
 				{
-					"name": "get all user",
+					"name": "get all employ",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/api/user/all",
+							"raw": "{{server}}/api/employ/all",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"employ",
 								"all"
 							]
 						}
@@ -609,18 +609,18 @@
 					"response": []
 				},
 				{
-					"name": "get single user",
+					"name": "get single employ",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/api/user/single/666ab9573f12d111a7043fee",
+							"raw": "{{server}}/api/employ/single/666ab9573f12d111a7043fee",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"employ",
 								"single",
 								"666ab9573f12d111a7043fee"
 							]
@@ -629,7 +629,7 @@
 					"response": []
 				},
 				{
-					"name": "update single user",
+					"name": "update single employ",
 					"request": {
 						"method": "PUT",
 						"header": [],
@@ -664,13 +664,13 @@
 							]
 						},
 						"url": {
-							"raw": "{{server}}/api/user/single/666ab9573f12d111a7043fee",
+							"raw": "{{server}}/api/employ/single/666ab9573f12d111a7043fee",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"employ",
 								"single",
 								"666ab9573f12d111a7043fee"
 							]
@@ -679,18 +679,18 @@
 					"response": []
 				},
 				{
-					"name": "delete a user",
+					"name": "delete a employ",
 					"request": {
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/api/user/single/666ab9573f12d111a7043fee",
+							"raw": "{{server}}/api/employ/single/666ab9573f12d111a7043fee",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"api",
-								"user",
+								"employ",
 								"single",
 								"666ab9573f12d111a7043fee"
 							]
