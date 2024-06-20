@@ -9,10 +9,9 @@ import cors from "cors";
 import { config } from "./config/config.js";
 
 export const corsOptions = {
-    origin: config.getEnv("FRONTEND_URL"),
+    origin: [config.getEnv("FRONTEND_URL")],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 export const app = express();
