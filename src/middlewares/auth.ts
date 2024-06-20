@@ -10,10 +10,6 @@ declare module "express-serve-static-core" {
         user?: { _id: string; role: string };
     }
 }
-export interface AuthType {
-    _id?: string;
-    role?: string;
-}
 export const auth = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
     const accessToken = req.cookies?.accessToken;
     if (!accessToken) return next(createHttpError(401, "Unauthorized user please login"));
