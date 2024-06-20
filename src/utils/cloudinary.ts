@@ -1,5 +1,5 @@
 import cloudinary from "cloudinary";
-import path from "node:path";
+import path from "path";
 import DataURIParser from "datauri/parser.js";
 import { config } from "../config/config.js";
 

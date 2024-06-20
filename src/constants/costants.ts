@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "path";
 import { fileURLToPath } from "url";
 import { config } from "../config/config.js";
 import { CookiesOptionTypes } from "../types/globalTypes.js";

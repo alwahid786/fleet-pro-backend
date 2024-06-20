@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Request } from "express";
 import createHttpError from "http-errors";
-import path from "node:path";
+import path from "path";
 import { config } from "../../config/config.js";
 import { __dirName, accessTokenOptions, refreshTokenOptions } from "../../constants/costants.js";
 import { JWTService } from "../../services/jwtToken.js";
