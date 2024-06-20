@@ -103,7 +103,7 @@ const login = TryCatch(async (req, res, next) => {
             message: "You are logged in successfully",
         });
     }
-    return res.status(400).json({ success: false, message: "oops please signup" });
+    return res.status(400).json({ success: false, message: "oops please signup",data:user });
 });
 //---------------
 // get my profile
