@@ -101,9 +101,10 @@ const login = TryCatch(async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "You are logged in successfully",
+            data: user,
         });
     }
-    return res.status(400).json({ success: false, message: "oops please signup",data:user });
+    return res.status(400).json({ success: false, message: "oops please signup" });
 });
 //---------------
 // get my profile
@@ -118,8 +119,8 @@ const getMyProfile = TryCatch(async (req, res, next) => {
 // logout
 //---------
 const logout = TryCatch(async (req, res, next) => {
-    res.clearCookie("accessToken");
     await JWTService().removeRefreshToken(String(req?.cookies?.refreshToken));
+    res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
     res.status(200).json({ success: true, message: "Logout Successfully" });
 });
@@ -133,9 +134,9 @@ const forgetPassword = TryCatch(async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) return next(createHttpError(404, "Please Provide Correct Email"));
     // send mail
-    const frontendUrl = config.getEnv("FRONTEND_URL");
+    const resetPasswordUrl = config.getEnv("RESET_PASSWORD_URL");
     const resetToken = await JWTService().accessToken(String(user._id));
-    const message = `Your Reset Password Link: ${frontendUrl}/resetPassword?resetToken=${resetToken}`;
+    const message = `Your Reset Password Link: ${resetPasswordUrl}/${resetToken}`;
     const isMailSent = await sendMail(email, "Reset Password", message);
     if (!isMailSent) return next(createHttpError(500, "Some Error Occurred While Sending Mail"));
     res.status(200).json({
@@ -147,7 +148,7 @@ const forgetPassword = TryCatch(async (req, res, next) => {
 // RESET PASSWORD
 //---------------
 const resetPassword = TryCatch(async (req, res, next) => {
-    const resetToken: string = req.query?.token as string;
+    const resetToken: string = req.query?.resetToken as string;
     const { newPassword } = req.body;
     if (!resetToken || !newPassword) return next(createHttpError(400, "Token and New Password are required"));
     let verifiedToken: any;

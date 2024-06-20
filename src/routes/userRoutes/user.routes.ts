@@ -31,7 +31,4 @@ export const userRoutes = (app: any) => {
 
     // reset password
     app.post("/api/user/reset-password", resetPassword);
-
-    // get new access token
-    app.get("/api/user/access-token", getNewAccessToken);
 };
