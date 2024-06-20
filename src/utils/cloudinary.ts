@@ -1,6 +1,7 @@
 import cloudinary from "cloudinary";
 import path from "node:path";
 import DataURIParser from "datauri/parser.js";
+import { config } from "../config/config.js";
 
 export const getDataUri = (file: Express.Multer.File) => {
     const parser = new DataURIParser();
@@ -11,9 +12,9 @@ export const getDataUri = (file: Express.Multer.File) => {
 export const configureCloudinary = async () => {
     try {
         cloudinary.v2.config({
-            cloud_name: process.env.CLOUDINARY_CLIENT_NAME,
-            api_key: process.env.CLOUDINARY_CLIENT_KEY,
-            api_secret: process.env.CLOUDINARY_CLIENT_SECRET,
+            cloud_name: config.getEnv("CLOUDINARY_CLIENT_NAME"),
+            api_key: config.getEnv("CLOUDINARY_CLIENT_KEY"),
+            api_secret: config.getEnv("CLOUDINARY_CLIENT_SECRET"),
         });
         console.log("Cloudinary configured successfully");
     } catch (error) {
