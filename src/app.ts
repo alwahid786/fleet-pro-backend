@@ -6,13 +6,14 @@ import path from "node:path";
 import { __dirName } from "./constants/costants.js";
 import { Errorhandler } from "./middlewares/errorHandler.js";
 import { allApiRoutes } from "./routes/index.routes.js";
+import { config } from "./config/config.js";
 
 export const app = express();
 
 // middleware
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: config.getEnv("FRONTEND_URL"),
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
     })
