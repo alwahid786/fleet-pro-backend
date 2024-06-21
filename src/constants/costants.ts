@@ -11,14 +11,14 @@ export const truckStatusEnum = ["notConnected", "connected"];
 
 export const accessTokenOptions: CookieOptions = {
     httpOnly: true,
-    secure: config.getEnv("NODE_ENV") == "production" ? true : false,
-    sameSite: config.getEnv("NODE_ENV") == "production" ? "none" : "lax",
+    secure: config.getEnv("NODE_ENV") == "development" ? false : true,
+    sameSite: "none",
     maxAge: parseInt(config.getEnv("ACCESS_TOKEN_MAX_AGE")),
 };
 
 export const refreshTokenOptions: CookieOptions = {
     httpOnly: true,
-    secure: config.getEnv("NODE_ENV") == "production" ? true : false,
-    sameSite: config.getEnv("NODE_ENV") == "production" ? "none" : "lax",
+    secure: config.getEnv("NODE_ENV") == "development" ? false : true,
+    sameSite: "none",
     maxAge: Number(config.getEnv("REFRESH_TOKEN_MAX_AGE")),
 };
