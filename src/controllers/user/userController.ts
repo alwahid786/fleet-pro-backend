@@ -120,8 +120,8 @@ const getMyProfile = TryCatch(async (req, res, next) => {
 //---------
 const logout = TryCatch(async (req, res, next) => {
     await JWTService().removeRefreshToken(String(req?.cookies?.refreshToken));
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.cookie("accessToken", null, { ...accessTokenOptions, expires: new Date() });
+    res.cookie("refreshToken", null, { ...refreshTokenOptions, expires: new Date() });
     res.status(200).json({ success: true, message: "Logout Successfully" });
 });
 //-----------------
