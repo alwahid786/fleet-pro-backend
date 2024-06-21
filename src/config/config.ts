@@ -1,5 +1,6 @@
 import { config as dotEnvConfig } from "dotenv";
 import { Config } from "../types/globalTypes.js";
+
 dotEnvConfig();
 
 const _config: Config = {
