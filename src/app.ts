@@ -12,12 +12,9 @@ export const app = express();
 
 // middleware
 app.use(
-    cors({
-        origin: config.getEnv("CORS_ORIGIN"),
-        credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE"],
-    })
+    cors()
 );
+console.log(config.getEnv("CORS_ORIGIN"));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
