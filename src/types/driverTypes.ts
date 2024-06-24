@@ -6,10 +6,10 @@ export interface DriverTypes {
     licenseExpiry: Date;
     fleetNumber: number;
     phoneNumber: string;
+    assignedTruck?: Types.ObjectId | null;
 }
 export interface SchemaDriverTypes extends DriverTypes {
     image: { url: string; public_id: string };
-    assignedTruck: Types.ObjectId | null;
     ownerId: string;
     createdAt: Date;
     updatedAt: Date;

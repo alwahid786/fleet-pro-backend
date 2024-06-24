@@ -7,7 +7,7 @@ import { CookieOptions } from "express";
 export const __dirName = fileURLToPath(import.meta.url);
 export const __fileName = path.dirname(__dirName);
 
-export const truckStatusEnum = ["notConnected", "connected"];
+export const truckStatusEnum = ["not-connected", "connected"];
 
 export const accessTokenOptions: CookieOptions = {
     httpOnly: true,

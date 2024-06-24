@@ -18,7 +18,7 @@ app.use(
         methods: ["GET", "POST", "PUT", "DELETE"],
     })
 );
-console.log(config.getEnv("CORS_ORIGIN"));
+// console.log(config.getEnv("CORS_ORIGIN"));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
