@@ -23,6 +23,7 @@ const _config: Config = {
     NODEMAILER_PORT: process.env.NODEMAILER_PORT,
     NODEMAILER_USER: process.env.NODEMAILER_USER,
     NODEMAILER_PASSWORD: process.env.NODEMAILER_PASSWORD,
+    CORS_ORIGIN: process.env.CORS_ORIGIN,
 };
 
 export const config = {

@@ -13,7 +13,7 @@ export const app = express();
 // middleware
 app.use(
     cors({
-        origin: config.getEnv("FRONTEND_URL"),
+        origin: config.getEnv("CORS_ORIGIN"),
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
     })
