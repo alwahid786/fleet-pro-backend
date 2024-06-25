@@ -1,11 +1,11 @@
 import { Request } from "express";
 import createHttpError from "http-errors";
-import mongoose, { isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import { Driver } from "../../models/driverModel/driver.model.js";
+import { Truck } from "../../models/truckModel/truck.model.js";
 import { DriverTypes, OptionalDriverTypes } from "../../types/driverTypes.js";
 import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
 import { TryCatch } from "../../utils/tryCatch.js";
-import { Truck } from "../../models/truckModel/truck.model.js";
 
 //
 // Create a Driver

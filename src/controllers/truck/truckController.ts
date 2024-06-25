@@ -17,8 +17,6 @@ const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, ne
     const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
     const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
-    if (!truckName || !fleetNumber || !plateNumber || !deviceId)
-        return next(createHttpError(400, "All Required fields are Not Provided!"));
     // upload image in cloudinary
     const fileUrl = getDataUri(image);
     if (!fileUrl.content) return next(createHttpError(400, "Error While Making a Url of File"));

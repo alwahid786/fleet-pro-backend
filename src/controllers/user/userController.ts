@@ -19,8 +19,6 @@ const register = TryCatch(async (req: Request<{}, {}, UserTypes>, res, next) => 
     const { firstName, lastName, email, address, phoneNumber, password } = req.body;
     const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Please Upload Profile Image"));
-    if (!email || !password || !firstName || !lastName || !address || !phoneNumber)
-        return next(createHttpError(400, "Please Enter All Required Fields"));
     // check user email is already exists
     const emailExists = await User.exists({ email });
     if (emailExists) return next(createHttpError(400, "Email Already Exists"));
@@ -85,7 +83,6 @@ const verifyRegistration = TryCatch(async (req: Request<{}, {}, { token: string 
 const login = TryCatch(async (req, res, next) => {
     // get all body data
     const { email, password } = req.body;
-    if (!email || !password) return next(createHttpError(400, "All fields are required!"));
     // match user
     const user = await User.findOne({ email });
     if (user) {
