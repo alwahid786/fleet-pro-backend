@@ -1,6 +1,6 @@
 import { Request } from "express";
 import createHttpError from "http-errors";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { Driver } from "../../models/driverModel/driver.model.js";
 import { DriverTypes, OptionalDriverTypes } from "../../types/driverTypes.js";
 import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
@@ -61,7 +61,7 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
         );
     } else {
         // create only driver
-        await Driver.create({
+        driver = await Driver.create({
             ownerId,
             firstName,
             fleetNumber,
@@ -83,7 +83,32 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
 const getAllDrivers = TryCatch(async (req, res, next) => {
     const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
-    const drivers = await Driver.find({ ownerId });
+    const drivers = await Driver.aggregate([
+        { $match: { ownerId: ownerId } },
+        {
+            $lookup: {
+                from: "trucks",
+                localField: "assignedTruck",
+                foreignField: "_id",
+                as: "assignedTruckDetails",
+                pipeline: [
+                    {
+                        $project: {
+                            truckName: 1,
+                            fleetNumber: 1,
+                        },
+                    },
+                ],
+            },
+        },
+        { $unwind: { path: "$assignedTruckDetails", preserveNullAndEmptyArrays: true } },
+        {
+            $addFields: {
+                assignedTruckName: "$assignedTruckDetails.truckName",
+                assignedTruckFleetNumber: "$assignedTruckDetails.fleetNumber",
+            },
+        },
+    ]);
     if (!drivers) return next(createHttpError(400, "Error While Fetching Drivers"));
     res.status(200).json({ success: true, drivers });
 });
@@ -110,11 +135,28 @@ const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>,
     if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
+
     // get data and validate
-    const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber, assignedTruck } = req.body;
-    console.log("req.body", req.body);
+    const {
+        firstName,
+        fleetNumber,
+        lastName,
+        licenseExpiry,
+        phoneNumber,
+        assignedTruck,
+        removeAssignedTruck,
+    } = req.body;
     const image: Express.Multer.File | undefined = req.file;
-    if (!firstName && !fleetNumber && !lastName && !licenseExpiry && !phoneNumber && !image && !assignedTruck)
+    if (
+        !firstName &&
+        !fleetNumber &&
+        !lastName &&
+        !licenseExpiry &&
+        !phoneNumber &&
+        !image &&
+        !assignedTruck &&
+        !removeAssignedTruck
+    )
         return next(createHttpError(400, "Please add Something to Update"));
 
     // get driver
@@ -124,15 +166,32 @@ const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>,
     // check if truck is available if assigned truck is givin
     let truck;
     if (assignedTruck) {
-        const isTruckAvailable = await Truck.findOne({ _id: assignedTruck, ownerId });
-        if (!isTruckAvailable) return next(createHttpError(400, "Truck Not Found"));
-        if (isTruckAvailable.status === "connected")
+        const isExist = await Truck.findOne({ _id: assignedTruck, ownerId });
+        if (!isExist) return next(createHttpError(400, "Truck Not Found"));
+        if (isExist.status === "connected")
             return next(createHttpError(400, "Truck is already connected to a driver"));
-        // update truck with driver id and status
+        // update truck with driver id and status if available
         truck = await Truck.findOneAndUpdate(
             { _id: assignedTruck, ownerId },
-            { $set: { assignedTo: driver._id, status: "connected" } }
+            { $set: { assignedTo: driver._id, status: "connected" } },
+            { new: true }
         );
+        if (!truck) return next(createHttpError(400, "Error While Connecting Truck"));
+    } else if (removeAssignedTruck) {
+        // check is this truck assigned to any drive
+        const isTruckAssigned = await Driver.exists({ assignedTruck: removeAssignedTruck, ownerId });
+        if (!isTruckAssigned) return next(createHttpError(404, "Truck Not Assigned to Any Driver"));
+        // remove truck assignment from driver
+        await Driver.findByIdAndUpdate(isTruckAssigned._id, { assignedTruck: null });
+        // remove assignment from truck
+        await Truck.findByIdAndUpdate(removeAssignedTruck, { assignedTo: null, status: "not-connected" });
+    }
+
+    // assign and remove truck
+    if (assignedTruck) {
+        driver.assignedTruck = assignedTruck;
+    } else if (removeAssignedTruck) {
+        driver.assignedTruck = null;
     }
 
     // update driver
@@ -141,18 +200,15 @@ const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>,
     if (fleetNumber) driver.fleetNumber = fleetNumber;
     if (licenseExpiry) driver.licenseExpiry = licenseExpiry;
     if (phoneNumber) driver.phoneNumber = phoneNumber;
-    if (truck && truck?.assignedTo) driver.assignedTruck = truck?._id;
     if (image) {
         // remove old file
         if (driver?.image?.public_id) await removeFromCloudinary(driver.image.public_id);
-
         // add new file as a profile image
         const fileUrl = getDataUri(image);
         if (!fileUrl.content) return next(createHttpError(400, "Error While Making a Url of File"));
         const myCloud = await uploadOnCloudinary(fileUrl.content!, "drivers");
         if (!myCloud?.public_id || !myCloud?.secure_url)
             return next(createHttpError(400, "Error While Uploading Image on Cloudinary"));
-
         // update driver data with new image
         driver.image.url = myCloud.secure_url;
         driver.image.public_id = myCloud.public_id;

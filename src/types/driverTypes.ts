@@ -7,6 +7,7 @@ export interface DriverTypes {
     fleetNumber: number;
     phoneNumber: string;
     assignedTruck?: Types.ObjectId | null;
+    removeAssignedTruck?: Types.ObjectId | null;
 }
 export interface SchemaDriverTypes extends DriverTypes {
     image: { url: string; public_id: string };

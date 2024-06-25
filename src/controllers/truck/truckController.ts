@@ -155,7 +155,7 @@ const removeTruckAssignment = TryCatch(async (req, res, next) => {
     // remove truck assignment from driver
     await Driver.findByIdAndUpdate(isTruckAssigned._id, { assignedTruck: null });
     // remove assignment from truck
-    await Truck.findByIdAndUpdate(truckId, { assignedTo: null, status: "notConnected" });
+    await Truck.findByIdAndUpdate(truckId, { assignedTo: null, status: "not-connected" });
     res.status(200).json({ success: true, message: "Truck Assignment Removed Successfully" });
 });
 
