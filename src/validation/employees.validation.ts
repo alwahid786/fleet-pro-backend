@@ -1,4 +1,4 @@
-import { body, query } from "express-validator";
+import { body, param } from "express-validator";
 
 const createEmployeeSanitizer = [
     body("firstName")
@@ -25,6 +25,7 @@ const createEmployeeSanitizer = [
 ];
 
 const updateEmployeeSanitizer = [
+    param("employId").isMongoId().withMessage("Invalid Employee Id"),
     body("firstName").optional().isString().withMessage("First name must be a string"),
     body("lastName").optional().isString().withMessage("Last name must be a string"),
     body("email").optional().isEmail().withMessage("Email must be a valid email"),
@@ -32,6 +33,6 @@ const updateEmployeeSanitizer = [
     body("phoneNumber").optional().isString().withMessage("Phone number must be a string"),
 ];
 
-const singleEmployeeSanitizer = [query("employId").isMongoId().withMessage("Invalid Employee Id")];
+const singleEmployeeSanitizer = [param("employId").isMongoId().withMessage("Invalid Employee Id")];
 
 export { createEmployeeSanitizer, updateEmployeeSanitizer, singleEmployeeSanitizer };

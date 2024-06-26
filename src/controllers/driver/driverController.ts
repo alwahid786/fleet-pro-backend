@@ -18,9 +18,7 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
     const { firstName, fleetNumber, lastName, licenseExpiry, phoneNumber, assignedTruck } = req.body;
     const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
-    if (!firstName || !fleetNumber || !lastName || !licenseExpiry || !phoneNumber)
-        return next(createHttpError(400, "All Required fields are Not Provided!"));
-
+    console.log(req.body);
     // check if truck is available
     if (assignedTruck) {
         if (!isValidObjectId(assignedTruck)) return next(createHttpError(400, "Invalid Truck Id"));

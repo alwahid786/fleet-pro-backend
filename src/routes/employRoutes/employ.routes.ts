@@ -19,9 +19,9 @@ export const employRoutes = (app: any) => {
     app.post(
         "/api/employ/create",
         auth,
+        singleUpload,
         createEmployeeSanitizer,
         handleValidatorError,
-        singleUpload,
         createNewEmploy
     );
 
@@ -31,6 +31,6 @@ export const employRoutes = (app: any) => {
     // get single user
     app.route("/api/employ/single/:employId")
         .get(auth, singleEmployeeSanitizer, handleValidatorError, getSingleEmploy)
-        .put(auth, updateEmployeeSanitizer, handleValidatorError, singleUpload, updateSingleEmploy)
+        .put(auth, singleUpload, updateEmployeeSanitizer, handleValidatorError, updateSingleEmploy)
         .delete(auth, singleEmployeeSanitizer, handleValidatorError, deleteSingleEmploy);
 };

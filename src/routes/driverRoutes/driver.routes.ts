@@ -19,16 +19,16 @@ export const driverRoutes = (app: any) => {
     app.post(
         "/api/driver/create",
         auth,
+        singleUpload,
         createDriverSanitizer,
         handleValidatorError,
-        singleUpload,
         createNewDriver
     );
 
     // update drivers and delete
     app.route("/api/driver/single/:driverId")
         .get(auth, singleDriverSanitizer, handleValidatorError, getSingleDriver)
-        .put(auth, updateDriverSanitizer, handleValidatorError, singleUpload, updateDriver)
+        .put(auth, singleUpload, updateDriverSanitizer, handleValidatorError, updateDriver)
         .delete(auth, singleDriverSanitizer, handleValidatorError, deleteDriver);
 
     // get all drivers

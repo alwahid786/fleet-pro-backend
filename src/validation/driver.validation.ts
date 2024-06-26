@@ -1,9 +1,9 @@
-import { body, query } from "express-validator";
+import { body, param, query } from "express-validator";
 
 const createDriverSanitizer = [
     body("firstName")
         .notEmpty()
-        .withMessage("First name is required")
+        .withMessage("First name is required ")
         .isString()
         .withMessage("First name must be a string"),
     body("lastName")
@@ -14,8 +14,8 @@ const createDriverSanitizer = [
     body("phoneNumber")
         .notEmpty()
         .withMessage("Phone number is required")
-        .isString()
-        .withMessage("Phone number must be a string"),
+        .isMobilePhone("any")
+        .withMessage("Phone number must be a valid phone number"),
     body("fleetNumber")
         .notEmpty()
         .withMessage("Fleet number is required")
@@ -31,13 +31,16 @@ const createDriverSanitizer = [
 const updateDriverSanitizer = [
     body("firstName").optional().isString().withMessage("First name must be a string"),
     body("lastName").optional().isString().withMessage("Last name must be a string"),
-    body("phoneNumber").optional().isString().withMessage("Phone number must be a string"),
+    body("phoneNumber")
+        .optional()
+        .isMobilePhone("any")
+        .withMessage("Phone number must be a valid phone number"),
     body("fleetNumber").optional().isInt().withMessage("Fleet number must be a number"),
     body("licenseExpiry").optional().isDate().withMessage("License expiry must be a date"),
     body("assignedTruck").optional().isMongoId().withMessage("Assigned truck must be a valid truck id"),
     body("removeAssignedTruck").optional().isMongoId().withMessage("Assigned truck must be a valid truck id"),
 ];
 
-const singleDriverSanitizer = [query("driverId").isMongoId().withMessage("Invalid Driver Id")];
+const singleDriverSanitizer = [param("driverId").isMongoId().withMessage("Invalid Driver Id")];
 
 export { createDriverSanitizer, updateDriverSanitizer, singleDriverSanitizer };

@@ -21,9 +21,9 @@ export const truckRoutes = (app: any) => {
     app.post(
         "/api/truck/create",
         auth,
+        singleUpload,
         createTruckSanitizer,
         handleValidatorError,
-        singleUpload,
         createNewTruck
     );
 
@@ -35,10 +35,4 @@ export const truckRoutes = (app: any) => {
 
     // get all trucks
     app.get("/api/truck/all", auth, getAllTrucks);
-
-    // // assigned truck to driver
-    // app.put("/api/truck/assign/:truckId", auth, assignTruckToDriver);
-
-    // // remove assignment from driver
-    // app.put("/api/truck/remove-assignment/:truckId", auth, removeTruckAssignment);
 };
