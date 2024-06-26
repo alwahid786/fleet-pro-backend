@@ -23,6 +23,7 @@ const createNewDriver = TryCatch(async (req: Request<{}, {}, DriverTypes>, res, 
 
     // check if truck is available
     if (assignedTruck) {
+        if (!isValidObjectId(assignedTruck)) return next(createHttpError(400, "Invalid Truck Id"));
         const isTruckAvailable = await Truck.findOne({ _id: assignedTruck, ownerId });
         if (!isTruckAvailable) return next(createHttpError(400, "Truck Not Found"));
         if (isTruckAvailable.status === "connected")
@@ -132,7 +133,7 @@ const getSingleDriver = TryCatch(async (req, res, next) => {
 //
 const updateDriver = TryCatch(async (req: Request<any, {}, OptionalDriverTypes>, res, next) => {
     const ownerId = req.user?._id;
-    if (!ownerId) return next(createHttpError(400, "Please Login to get Drivers"));
+    if (!ownerId) return next(createHttpError(400, "Please Login to update Drivers"));
     const { driverId } = req.params;
     if (!isValidObjectId(driverId)) return next(createHttpError(400, "Invalid Driver Id"));
 
