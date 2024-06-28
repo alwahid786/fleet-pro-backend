@@ -10,6 +10,8 @@ const createDevice = TryCatch(
     async (req: Request<{}, {}, DeviceTypes>, res: Response, next: NextFunction) => {
         const ownerId = req.user?._id;
         const { name, type } = req.body;
+        console.log(req.body);
+        if (!name || !type) return next(createHttpError.BadRequest("All fields are required"));
         await Device.create({ name, type, ownerId });
         res.status(201).json({ success: true, message: "Device created successfully" });
     }
@@ -21,8 +23,13 @@ const updateDevice = TryCatch(async (req: Request, res: Response, next: NextFunc
     const ownerId = req.user?._id;
     const deviceId = req?.params?.deviceId;
     const { name, type } = req.body;
-    const device = await Device.findOneAndUpdate({ _id: deviceId, ownerId }, { name, type }, { new: true });
+    if (!name && !type) return next(createHttpError.BadRequest("Nothing For Update"));
+    const device = await Device.findOne({ _id: deviceId, ownerId });
     if (!device) return next(createHttpError.NotFound("Device Not Found"));
+    if (name) device.name = name;
+    if (type) device.type = type;
+    await device.save();
+
     res.status(200).json({ success: true, message: "Device updated successfully" });
 });
 

@@ -11,7 +11,7 @@ const deviceRoutes = (app: any) => {
     app.post("/api/device/create", auth, createDevice);
 
     // update device and delete device
-    app.route("/api/device/:deviceId").put(auth, updateDevice).delete(auth, deleteDevice);
+    app.route("/api/device/single/:deviceId").put(auth, updateDevice).delete(auth, deleteDevice);
 
     // get all devices
     app.get("/api/device/all", auth, getAllDevices);

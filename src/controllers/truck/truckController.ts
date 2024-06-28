@@ -115,7 +115,9 @@ const getSingleTruck = TryCatch(async (req, res, next) => {
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
     // get truck
-    const truck = await Truck.findOne({ _id: truckId, ownerId }).populate("assignedTo", "firstName lastName");
+    const truck = await Truck.findOne({ _id: truckId, ownerId })
+        // .populate("assignedTo", "firstName lastName")
+        .populate("devices");
     if (!truck) return next(createHttpError(404, "Truck Not Found"));
     res.status(200).json({ success: true, truck });
 });
@@ -179,13 +181,16 @@ const removeTruckAssignment = TryCatch(async (req, res, next) => {
     res.status(200).json({ success: true, message: "Truck Assignment Removed Successfully" });
 });
 
-// ADD DEVICE TO TRUCK
+// attach device
 //---------------------
+
 const attachDevice = TryCatch(async (req, res, next) => {
     const ownerId = req.user?._id;
     // get data and validate
     const { truckId } = req.params;
-    const { deviceId } = req.query;
+    const { deviceId } = req.body;
+    if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
+    if (!isValidObjectId(deviceId)) return next(createHttpError(400, "Invalid Device Id"));
 
     // check is device and truck exist
     const [isDeviceExist, isTruckExist, isDeviceAssigned] = await Promise.all([
@@ -210,7 +215,7 @@ const attachDevice = TryCatch(async (req, res, next) => {
     });
 });
 
-// REMOVE DEVICE FROM TRUCK
+// detach device
 //-------------------------
 const detachDevice = TryCatch(async (req, res, next) => {
     const ownerId = req.user?._id;
