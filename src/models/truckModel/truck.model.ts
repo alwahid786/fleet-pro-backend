@@ -1,6 +1,5 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import { truckStatusEnum } from "../../constants/costants.js";
-import { Types } from "mongoose";
 import { SchemaTruckTypes } from "../../types/truckTypes.js";
 
 const imageSchema = new Schema({
@@ -14,7 +13,7 @@ const truckSchema = new Schema<SchemaTruckTypes>(
         truckName: { type: String, required: true },
         fleetNumber: { type: Number, required: true },
         plateNumber: { type: Number, required: true },
-        deviceId: { type: String, required: true },
+        devices: { type: [Schema.Types.ObjectId], ref: "Device", default: [] },
         image: { type: imageSchema, required: true },
         status: { type: String, enum: truckStatusEnum, default: "not-connected" },
         assignedTo: { type: Types.ObjectId, ref: "Driver" },

@@ -16,11 +16,6 @@ const createTruckSanitizer = [
         .withMessage("Plate number is required")
         .isInt()
         .withMessage("Plate number must be a number"),
-    body("deviceId")
-        .notEmpty()
-        .withMessage("Device id is required")
-        .isString()
-        .withMessage("Device id must be a string"),
 ];
 
 const updateTruckSanitizer = [
@@ -28,7 +23,6 @@ const updateTruckSanitizer = [
     body("truckName").optional().isString().withMessage("Truck name must be a string"),
     body("fleetNumber").optional().isInt().withMessage("Fleet number must be a number"),
     body("plateNumber").optional().isInt().withMessage("Plate number must be a number"),
-    body("deviceId").optional().isString().withMessage("Device id must be a string"),
 ];
 
 const singleTruckSanitizer = [param("truckId").isMongoId().withMessage("Invalid or Missing Truck Id")];

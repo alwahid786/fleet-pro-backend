@@ -1,7 +1,9 @@
 import {
     assignTruckToDriver,
+    attachDevice,
     createNewTruck,
     deleteTruck,
+    detachDevice,
     getAllTrucks,
     getSingleTruck,
     removeTruckAssignment,
@@ -35,4 +37,10 @@ export const truckRoutes = (app: any) => {
 
     // get all trucks
     app.get("/api/truck/all", auth, getAllTrucks);
+
+    // attach device to truck
+    app.put("/api/truck/:truckId/attach-device", auth, attachDevice);
+
+    // detach device from truck
+    app.put("/api/truck/:truckId/detach-device", auth, detachDevice);
 };

@@ -1,22 +1,24 @@
 import { NextFunction, Request, Response } from "express";
 
-export type ControllerType = (
+type ControllerType = (
     req: Request | any,
     res: Response,
     next: NextFunction
 ) => Promise<void | Response<any, Record<string, any>>>;
 
-export interface CustomRequest extends Request {
+interface CustomRequest extends Request {
     userId: string;
 }
 
-export interface Config {
+interface Config {
     [key: string]: string | undefined;
 }
 
-export interface CookiesOptionTypes {
+interface CookiesOptionTypes {
     httpOnly: boolean;
     secure: boolean;
     sameSite: string;
     maxAge: number;
 }
+
+export { ControllerType, CustomRequest, Config, CookiesOptionTypes };

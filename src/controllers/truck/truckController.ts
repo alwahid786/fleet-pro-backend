@@ -6,15 +6,16 @@ import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../util
 import { TryCatch } from "../../utils/tryCatch.js";
 import { OptionalTruckTypes, TruckTypes } from "../../types/truckTypes.js";
 import { Request } from "express";
+import { Device } from "../../models/deviceModel/device.model.js";
 
-//-----------------
 // create new truck
 //-----------------
 const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, next) => {
     const ownerId = req.user?._id;
     if (!ownerId) return next(createHttpError(400, "Please Login to create a Driver"));
     // get data and validate
-    const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
+    const { truckName, fleetNumber, plateNumber, devices = [] } = req.body;
+
     const image: Express.Multer.File | undefined = req.file;
     if (!image) return next(createHttpError(400, "Image Not Provided!"));
     // upload image in cloudinary
@@ -23,22 +24,45 @@ const createNewTruck = TryCatch(async (req: Request<{}, {}, TruckTypes>, res, ne
     const myCloud = await uploadOnCloudinary(fileUrl.content!, "trucks");
     if (!myCloud?.public_id || !myCloud?.secure_url)
         return next(createHttpError(400, "Error While Uploading Image on Cloudinary"));
-    // create truck
-    const truck = await Truck.create({
-        ownerId,
-        truckName,
-        fleetNumber,
-        plateNumber,
-        deviceId,
-        image: {
-            url: myCloud.secure_url,
-            public_id: myCloud.public_id,
-        },
-    });
-    if (!truck) return next(createHttpError(400, "Error While Creating Truck"));
+    // add devices if givin
+    if (devices && devices?.length > 0) {
+        // check if all devices are exist
+        const fetchedDevices = await Device.find({ _id: { $in: devices } }).select("_id");
+        if (fetchedDevices.length !== devices.length) {
+            return next(createHttpError(400, "Some Devices Not Found"));
+        }
+        // get devices ids
+        const devicesIds = fetchedDevices.map((device) => device._id);
+        // create truck
+        const truck = await Truck.create({
+            ownerId,
+            truckName,
+            fleetNumber,
+            plateNumber,
+            devices: devicesIds,
+            image: {
+                url: myCloud.secure_url,
+                public_id: myCloud.public_id,
+            },
+        });
+        // update devices
+        await Device.updateMany({ _id: { $in: devicesIds } }, { $set: { assignedTo: truck?._id } });
+    } else {
+        // create truck
+        await Truck.create({
+            ownerId,
+            truckName,
+            fleetNumber,
+            plateNumber,
+            image: {
+                url: myCloud.secure_url,
+                public_id: myCloud.public_id,
+            },
+        });
+    }
     res.status(201).json({ success: true, message: "Truck Created Successfully" });
 });
-//----------------
+
 // get all trucks
 //---------------
 const getAllTrucks = TryCatch(async (req, res, next) => {
@@ -48,7 +72,7 @@ const getAllTrucks = TryCatch(async (req, res, next) => {
     if (!trucks) return next(createHttpError(400, "Error While Fetching Trucks"));
     res.status(200).json({ success: true, trucks });
 });
-//--------------------
+
 // update single truck
 //--------------------
 const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, res, next) => {
@@ -56,9 +80,9 @@ const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, r
     const { truckId } = req.params;
     if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
     // get data and validate
-    const { truckName, fleetNumber, plateNumber, deviceId } = req.body;
+    const { truckName, fleetNumber, plateNumber } = req.body;
     const image: Express.Multer.File | undefined = req.file;
-    if (!truckName && !fleetNumber && !plateNumber && !deviceId && !image)
+    if (!truckName && !fleetNumber && !plateNumber && !image)
         return next(createHttpError(400, "Not Any Field Is Provided!"));
     // get truck
     const truck = await Truck.findOne({ _id: truckId, ownerId });
@@ -67,7 +91,6 @@ const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, r
     if (truckName) truck.truckName = truckName;
     if (fleetNumber) truck.fleetNumber = fleetNumber;
     if (plateNumber) truck.plateNumber = plateNumber;
-    if (deviceId) truck.deviceId = deviceId;
     if (image) {
         // remove old image from cloudinary
         if (truck.image?.public_id) await removeFromCloudinary(truck.image.public_id);
@@ -84,7 +107,7 @@ const updateTruck = TryCatch(async (req: Request<any, {}, OptionalTruckTypes>, r
     await truck.save();
     res.status(200).json({ success: true, message: "Truck Updated Successfully" });
 });
-//------------------
+
 // get single truck
 //------------------
 const getSingleTruck = TryCatch(async (req, res, next) => {
@@ -96,7 +119,7 @@ const getSingleTruck = TryCatch(async (req, res, next) => {
     if (!truck) return next(createHttpError(404, "Truck Not Found"));
     res.status(200).json({ success: true, truck });
 });
-//-------------
+
 // delete truck
 //-------------
 const deleteTruck = TryCatch(async (req, res, next) => {
@@ -111,7 +134,6 @@ const deleteTruck = TryCatch(async (req, res, next) => {
     res.status(200).json({ success: true, message: "Truck Deleted Successfully" });
 });
 
-//------------------------
 // assign truck to driver
 //-----------------------
 const assignTruckToDriver = TryCatch(async (req, res, next) => {
@@ -139,7 +161,7 @@ const assignTruckToDriver = TryCatch(async (req, res, next) => {
     if (!truck || !driver) return next(createHttpError(400, "Error While Assigning Truck to Driver"));
     res.status(200).json({ success: true, message: "Truck Assigned Successfully" });
 });
-//------------------------------
+
 // remove assignment from driver
 //------------------------------
 const removeTruckAssignment = TryCatch(async (req, res, next) => {
@@ -157,6 +179,66 @@ const removeTruckAssignment = TryCatch(async (req, res, next) => {
     res.status(200).json({ success: true, message: "Truck Assignment Removed Successfully" });
 });
 
+// ADD DEVICE TO TRUCK
+//---------------------
+const attachDevice = TryCatch(async (req, res, next) => {
+    const ownerId = req.user?._id;
+    // get data and validate
+    const { truckId } = req.params;
+    const { deviceId } = req.query;
+
+    // check is device and truck exist
+    const [isDeviceExist, isTruckExist, isDeviceAssigned] = await Promise.all([
+        Device.exists({ _id: deviceId, ownerId }),
+        Truck.exists({ _id: truckId, ownerId }),
+        Truck.exists({ devices: { $in: [deviceId] } }),
+    ]);
+    if (!isDeviceExist) return next(createHttpError.NotFound("Device Not Found"));
+    if (!isTruckExist) return next(createHttpError.NotFound("Truck Not Found"));
+    if (isDeviceAssigned) return next(createHttpError.BadRequest("Device Already Assigned to Another Truck"));
+
+    // update truck and device  in promise.all
+    const [truck, device] = await Promise.all([
+        Truck.findByIdAndUpdate(truckId, { $push: { devices: deviceId } }, { new: true }),
+        Device.findByIdAndUpdate(deviceId, { assignedTo: truckId }, { new: true }),
+    ]);
+    if (!truck || !device)
+        return next(createHttpError.InternalServerError("Error While Adding Device to Truck"));
+    res.status(200).json({
+        success: true,
+        message: `Device ${device.name} Added to Truck ${truck.truckName} Successfully`,
+    });
+});
+
+// REMOVE DEVICE FROM TRUCK
+//-------------------------
+const detachDevice = TryCatch(async (req, res, next) => {
+    const ownerId = req.user?._id;
+    const { truckId } = req.params;
+    const { deviceId } = req.query;
+    // check is device and truck exist
+    const [isDeviceExist, isTruckExist, isDeviceAssigned] = await Promise.all([
+        Device.exists({ _id: deviceId, ownerId }),
+        Truck.exists({ _id: truckId, ownerId }),
+        Truck.exists({ devices: { $in: [deviceId] } }),
+    ]);
+    if (!isDeviceExist) return next(createHttpError.NotFound("Device Not Found"));
+    if (!isTruckExist) return next(createHttpError.NotFound("Truck Not Found"));
+    if (!isDeviceAssigned) return next(createHttpError.BadRequest("Device Not Assigned to any Truck"));
+
+    // update truck and device
+    const [truck, device] = await Promise.all([
+        Truck.findByIdAndUpdate(truckId, { $pull: { devices: deviceId } }, { new: true }),
+        Device.findByIdAndUpdate(deviceId, { assignedTo: null }, { new: true }),
+    ]);
+    if (!truck || !device)
+        return next(createHttpError.InternalServerError("Error While Removing Device from Truck"));
+    res.status(200).json({
+        success: true,
+        message: `Device ${device.name} Removed from Truck ${truck.truckName} Successfully`,
+    });
+});
+
 export {
     assignTruckToDriver,
     createNewTruck,
@@ -165,4 +247,6 @@ export {
     removeTruckAssignment,
     updateTruck,
     getSingleTruck,
+    attachDevice,
+    detachDevice,
 };

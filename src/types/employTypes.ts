@@ -1,4 +1,4 @@
-export interface EmployTypes {
+interface EmployTypes {
     ownerId: string;
     firstName: string;
     lastName: string;
@@ -7,10 +7,12 @@ export interface EmployTypes {
     phoneNumber: string;
 }
 
-export interface EmploySchemaTypes extends EmployTypes {
+interface EmploySchemaTypes extends EmployTypes {
     image: { url: string; public_id: string };
     createdAt: Date;
     updatedAt: Date;
 }
 
-export type OptionalEmployTypes = Partial<EmployTypes>;
+type OptionalEmployTypes = Partial<EmployTypes>;
+
+export { EmployTypes, EmploySchemaTypes, OptionalEmployTypes };

@@ -1,14 +1,14 @@
 import { Types } from "mongoose";
 
-export interface TruckTypes {
+interface TruckTypes {
     truckName: string;
     fleetNumber: number;
     plateNumber: number;
-    deviceId: string;
-    assignedTo: Types.ObjectId | null;
+    devices: [Types.ObjectId] | undefined;
+    assignedTo: Types.ObjectId | undefined;
 }
 
-export interface SchemaTruckTypes extends TruckTypes {
+interface SchemaTruckTypes extends TruckTypes {
     image: { url: string; public_id: string };
     assignedTruck: Types.ObjectId | null;
     ownerId: string;
@@ -17,4 +17,6 @@ export interface SchemaTruckTypes extends TruckTypes {
     updatedAt: Date;
 }
 
-export type OptionalTruckTypes = Partial<TruckTypes>;
+type OptionalTruckTypes = Partial<TruckTypes>;
+
+export { TruckTypes, SchemaTruckTypes, OptionalTruckTypes };
