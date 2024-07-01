@@ -6,7 +6,6 @@ import path from "path";
 import { __dirName } from "./constants/costants.js";
 import { Errorhandler } from "./middlewares/errorHandler.js";
 import { allApiRoutes } from "./routes/index.routes.js";
-import { config } from "./config/config.js";
 
 export const app = express();
 

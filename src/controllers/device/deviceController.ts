@@ -3,6 +3,7 @@ import { Device } from "../../models/deviceModel/device.model.js";
 import { TryCatch } from "../../utils/tryCatch.js";
 import { DeviceTypes } from "../../types/device.types.js";
 import createHttpError from "http-errors";
+import Sensor from "../../models/sensorModel/sensor.model.js";
 
 // create device
 // -------------
@@ -64,4 +65,35 @@ const getAllDevices = TryCatch(async (req: Request, res: Response, next: NextFun
     res.status(200).json({ success: true, data: devices });
 });
 
-export { createDevice, getSingleDevice, deleteDevice, getAllDevices, updateDevice };
+// get device data by unique id
+// -------------------------------
+const getSingleDeviceLatestData = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+    const { uniqueId } = req.query;
+    const sensors = await Sensor.find({
+        payload: { $regex: `\"uniqueId\": \"${uniqueId}\"` },
+    });
+    if (!sensors || sensors.length === 0) {
+        return next(createHttpError.NotFound("Device Not Found"));
+    }
+    const parsedSensors = sensors.map((sensor: any) => {
+        const parsedPayload = JSON.parse(sensor.payload);
+        return {
+            _id: sensor._id,
+            topic: sensor.topic,
+            payload: parsedPayload,
+            timestamp: parsedPayload.timestamp,
+        };
+    });
+    parsedSensors.sort((a: any, b: any) => b.timestamp - a.timestamp);
+    const latestSensor = parsedSensors[0];
+    res.status(200).json({ success: true, data: latestSensor });
+});
+
+export {
+    createDevice,
+    getSingleDevice,
+    deleteDevice,
+    getAllDevices,
+    updateDevice,
+    getSingleDeviceLatestData,
+};

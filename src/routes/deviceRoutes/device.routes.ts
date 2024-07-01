@@ -2,6 +2,7 @@ import {
     createDevice,
     deleteDevice,
     getAllDevices,
+    getSingleDeviceLatestData,
     updateDevice,
 } from "../../controllers/device/deviceController.js";
 import { auth } from "../../middlewares/auth.js";
@@ -15,6 +16,9 @@ const deviceRoutes = (app: any) => {
 
     // get all devices
     app.get("/api/device/all", auth, getAllDevices);
+
+    // get sensor data
+    app.get("/api/device/latest-data", auth, getSingleDeviceLatestData);
 };
 
 export { deviceRoutes };
