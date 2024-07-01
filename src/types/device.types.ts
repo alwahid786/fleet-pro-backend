@@ -4,6 +4,8 @@ interface DeviceTypes {
     ownerId: Types.ObjectId;
     name: string;
     type: string;
+    ip: string;
+    uniqueId: string;
     assignedTo?: Types.ObjectId | null;
 }
 interface DeviceSchemaTypes extends DeviceTypes {

@@ -1,0 +1,22 @@
+{
+    "truck_id": "truck_1",
+    "timestamp": 1719569240.1169095,
+    "gps": { "latitude": 77.4342375, "longitude": -98.541087, "altitude": 7050.228048971283 },
+    "speed": 17.09319705431335,
+    "fuel_level": 9.17605061701563,
+    "engine_temperature": 95.6402879417669,
+    "tire_pressure": {
+        "front_left": 30.609441679605997,
+        "front_right": 31.616353690136826,
+        "rear_left": 33.97957343617665,
+        "rear_right": 31.200422057744436
+    },
+    "battery_voltage": 13.022849083788508,
+    "cargo_temperature": 15.56460870305714,
+    "driver_status": "off_duty",
+    "route_status": "on_route",
+    "odometer": 18254.63941346239,
+    "acceleration": { "x": -7.220840342108259, "y": 3.2715346151359608, "z": 2.761408296439864 },
+    "gyroscope": { "roll": 152.98183992871037, "pitch": 37.493328585235005, "yaw": 48.898336130698794 },
+    "maintenance_due": true
+}

@@ -9,25 +9,38 @@ import createHttpError from "http-errors";
 const createDevice = TryCatch(
     async (req: Request<{}, {}, DeviceTypes>, res: Response, next: NextFunction) => {
         const ownerId = req.user?._id;
-        const { name, type } = req.body;
+        const { name, type, ip, uniqueId } = req.body;
         console.log(req.body);
-        if (!name || !type) return next(createHttpError.BadRequest("All fields are required"));
-        await Device.create({ name, type, ownerId });
+        if (!name || !type || !ip || !uniqueId)
+            return next(createHttpError.BadRequest("All fields are required"));
+        await Device.create({ name, type, ip, uniqueId, ownerId });
         res.status(201).json({ success: true, message: "Device created successfully" });
     }
 );
+
+// get single device
+// -----------------
+const getSingleDevice = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+    const ownerId = req.user?._id;
+    const deviceId = req?.params?.deviceId;
+    const device = await Device.findOne({ _id: deviceId, ownerId });
+    if (!device) return next(createHttpError.NotFound("Device Not Found"));
+    res.status(200).json({ success: true, data: device });
+});
 
 // update device
 // -------------
 const updateDevice = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
     const ownerId = req.user?._id;
     const deviceId = req?.params?.deviceId;
-    const { name, type } = req.body;
-    if (!name && !type) return next(createHttpError.BadRequest("Nothing For Update"));
+    const { name, type, ip, uniqueId } = req.body;
+    if (!name && !type && !ip && !uniqueId) return next(createHttpError.BadRequest("Nothing For Update"));
     const device = await Device.findOne({ _id: deviceId, ownerId });
     if (!device) return next(createHttpError.NotFound("Device Not Found"));
     if (name) device.name = name;
     if (type) device.type = type;
+    if (ip) device.ip = ip;
+    if (uniqueId) device.uniqueId = uniqueId;
     await device.save();
 
     res.status(200).json({ success: true, message: "Device updated successfully" });
@@ -51,4 +64,4 @@ const getAllDevices = TryCatch(async (req: Request, res: Response, next: NextFun
     res.status(200).json({ success: true, data: devices });
 });
 
-export { createDevice, deleteDevice, getAllDevices, updateDevice };
+export { createDevice, getSingleDevice, deleteDevice, getAllDevices, updateDevice };
