@@ -8,6 +8,7 @@ import { Errorhandler } from "./middlewares/errorHandler.js";
 import { allApiRoutes } from "./routes/index.routes.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { socketAuth } from "./middlewares/auth.js";
 
 const app = express();
 const corsOptions = {
@@ -15,6 +16,7 @@ const corsOptions = {
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
 };
+const liveSockets = new Map();
 
 // middleware
 app.use(cors(corsOptions));
@@ -25,8 +27,10 @@ const io = new Server(server, {
 });
 app.set("io", io);
 
+io.use(socketAuth);
+
 io.on("connection", (socket: any) => {
-    console.log("connected", socket.id);
+    liveSockets.set(String(socket.user?._id), socket.id);
     socket.on("disconnect", () => {
         console.log("disconnected");
     });
@@ -51,4 +55,4 @@ allApiRoutes(app);
 // global error handler middleware
 app.use(Errorhandler);
 
-export { app, server };
+export { app, server, io };

@@ -6,11 +6,26 @@ import { TryCatch } from "../utils/tryCatch.js";
 import { User } from "../models/userModel/user.model.js";
 import { JWTService } from "../services/jwtToken.js";
 import { accessTokenOptions, refreshTokenOptions } from "../constants/costants.js";
+import { Server, Socket } from "socket.io";
 
 declare module "express-serve-static-core" {
     interface Request {
         user?: { _id: string; role: string };
     }
+}
+declare module "socket.io" {
+    interface Socket {
+        user?: { _id: string; role: string };
+    }
+}
+
+interface JWTPayload {
+    _id: string;
+}
+
+interface UserDocument {
+    _id: string;
+    role: string;
 }
 
 export const auth = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
@@ -57,3 +72,5 @@ export const isAdmin = TryCatch(async (req: Request, res: Response, next: NextFu
         return next(createHttpError(403, "You are not authorized for this operation"));
     next();
 });
+
+export const socketAuth = async (socket: Socket, next: (err?: Error) => void) => {};
