@@ -1,4 +1,5 @@
 import {
+    addSensorData,
     createDevice,
     deleteDevice,
     getAllDevices,
@@ -19,6 +20,9 @@ const deviceRoutes = (app: any) => {
 
     // get sensor data
     app.get("/api/device/latest-data", auth, getSingleDeviceLatestData);
+
+    // add sensor data
+    app.post("/api/device/add-sensor-data", auth, addSensorData);
 };
 
 export { deviceRoutes };

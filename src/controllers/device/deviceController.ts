@@ -89,6 +89,17 @@ const getSingleDeviceLatestData = TryCatch(async (req: Request, res: Response, n
     res.status(200).json({ success: true, data: latestSensor });
 });
 
+// add sensor data
+// ----------------
+const addSensorData = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+    const sensor = await Sensor.create({
+        topic: "fleet/truck_data",
+        payload:
+            '{"uniqueId": "1245678", "truck_id": "truck_7", "timestamp": 1719832884.0254388, "gps": {"latitude": -37.5647005, "longitude": 73.962391, "altitude": 809.8577272617125}, "speed": 0.15332288466532784, "fuel_level": 69.78690546765293, "engine_temperature": 72.9582570012823, "tire_pressure": {"front_left": 30.591168908883176, "front_right": 30.436918631113077, "rear_left": 31.20862302411171, "rear_right": 32.45954209735951}, "battery_voltage": 13.272418955373332, "cargo_temperature": -5.653092866635934, "driver_status": "driving", "route_status": "delayed", "odometer": 625751.9569006935, "acceleration": {"x": 5.673495641340345, "y": -9.121893433694865, "z": 1.6751827668062074}, "gyroscope": {"roll": 124.19050837017585, "pitch": 56.28113589145582, "yaw": 97.09270586698909}, "maintenance_due": false}',
+    });
+    res.status(200).json({ success: true, data: sensor });
+});
+
 export {
     createDevice,
     getSingleDevice,
@@ -96,4 +107,5 @@ export {
     getAllDevices,
     updateDevice,
     getSingleDeviceLatestData,
+    addSensorData,
 };
