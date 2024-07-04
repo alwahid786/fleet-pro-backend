@@ -31,7 +31,7 @@ export const auth = TryCatch(async (req: Request, res: Response, next: NextFunct
         let verifyToken: any;
         let receivedUser: any;
         if (accessToken) {
-            verifyToken = JWTService().verifyAccessToken(accessToken);
+            verifyToken = await JWTService().verifyAccessToken(accessToken);
             const user = await User.findById(verifyToken._id).select(["_id", "role"]);
             if (!user) return next(createHttpError(401, "Unauthorized user please login"));
             receivedUser = { _id: String(user._id), role: user?.role };
@@ -69,13 +69,14 @@ export const isAdmin = TryCatch(async (req: Request, res: Response, next: NextFu
         return next(createHttpError(403, "You are not authorized for this operation"));
     next();
 });
+
 export const isSocketAuth = TryCatchSocket(async (err: Error, socket: any, next: (err?: Error) => void) => {
     try {
         const accessToken = socket.request.cookies?.accessToken;
         let verifyToken: any;
         let receivedUser: any;
         if (accessToken) {
-            verifyToken = JWTService().verifyAccessToken(accessToken);
+            verifyToken = await JWTService().verifyAccessToken(accessToken);
             const user = await User.findById(verifyToken._id).select(["_id", "role"]);
             if (!user) return next(createHttpError(401, "Unauthorized user please login"));
             receivedUser = { _id: String(user._id), role: user?.role };
