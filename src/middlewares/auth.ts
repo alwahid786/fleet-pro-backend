@@ -1,12 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
-import jwt from "jsonwebtoken";
-import { config } from "../config/config.js";
-import { TryCatch } from "../utils/tryCatch.js";
+import { Server, Socket } from "socket.io";
+import { accessTokenOptions, refreshTokenOptions } from "../constants/costants.js";
 import { User } from "../models/userModel/user.model.js";
 import { JWTService } from "../services/jwtToken.js";
-import { accessTokenOptions, refreshTokenOptions } from "../constants/costants.js";
-import { Server, Socket } from "socket.io";
+import { TryCatch, TryCatchSocket } from "../utils/tryCatch.js";
 
 declare module "express-serve-static-core" {
     interface Request {
@@ -16,13 +14,12 @@ declare module "express-serve-static-core" {
 declare module "socket.io" {
     interface Socket {
         user?: { _id: string; role: string };
+        cookies?: { [key: string]: string };
     }
 }
-
 interface JWTPayload {
     _id: string;
 }
-
 interface UserDocument {
     _id: string;
     role: string;
@@ -34,7 +31,7 @@ export const auth = TryCatch(async (req: Request, res: Response, next: NextFunct
         let verifyToken: any;
         let receivedUser: any;
         if (accessToken) {
-            verifyToken = jwt.verify(accessToken, config.getEnv("ACCESS_TOKEN_SECRET")!);
+            verifyToken = JWTService().verifyAccessToken(accessToken);
             const user = await User.findById(verifyToken._id).select(["_id", "role"]);
             if (!user) return next(createHttpError(401, "Unauthorized user please login"));
             receivedUser = { _id: String(user._id), role: user?.role };
@@ -72,5 +69,27 @@ export const isAdmin = TryCatch(async (req: Request, res: Response, next: NextFu
         return next(createHttpError(403, "You are not authorized for this operation"));
     next();
 });
-
-export const socketAuth = async (socket: Socket, next: (err?: Error) => void) => {};
+export const isSocketAuth = TryCatchSocket(async (err: Error, socket: any, next: (err?: Error) => void) => {
+    try {
+        const accessToken = socket.request.cookies?.accessToken;
+        let verifyToken: any;
+        let receivedUser: any;
+        if (accessToken) {
+            verifyToken = JWTService().verifyAccessToken(accessToken);
+            const user = await User.findById(verifyToken._id).select(["_id", "role"]);
+            if (!user) return next(createHttpError(401, "Unauthorized user please login"));
+            receivedUser = { _id: String(user._id), role: user?.role };
+        } else {
+            const refreshToken = socket.request.cookies?.refreshToken;
+            if (!refreshToken) return next(createHttpError(401, "Unauthorized user please login"));
+            verifyToken = await JWTService().verifyRefreshToken(refreshToken);
+            const user = await User.findById(verifyToken._id).select(["_id", "role"]);
+            if (!user) return next(createHttpError(401, "Unauthorized user please login"));
+            receivedUser = { _id: String(user._id), role: user?.role };
+        }
+        socket.user = receivedUser;
+        next();
+    } catch (error) {
+        next(createHttpError(401, "Unauthorized user please login"));
+    }
+});

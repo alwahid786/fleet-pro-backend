@@ -22,3 +22,7 @@ export const refreshTokenOptions: CookieOptions = {
     secure: config.getEnv("NODE_ENV") !== "development",
     maxAge: Number(config.getEnv("REFRESH_TOKEN_MAX_AGE")),
 };
+
+export const socketEvent = {
+    SENSORS_DATA: "SENSORS_DATA",
+};

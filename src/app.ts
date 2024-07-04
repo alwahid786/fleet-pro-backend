@@ -1,14 +1,14 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import { createServer } from "http";
 import morgan from "morgan";
 import path from "path";
+import { Server, Socket } from "socket.io";
 import { __dirName } from "./constants/costants.js";
+import { isSocketAuth } from "./middlewares/auth.js";
 import { Errorhandler } from "./middlewares/errorHandler.js";
 import { allApiRoutes } from "./routes/index.routes.js";
-import { createServer } from "http";
-import { Server } from "socket.io";
-import { socketAuth } from "./middlewares/auth.js";
 
 const app = express();
 const corsOptions = {
@@ -27,10 +27,16 @@ const io = new Server(server, {
 });
 app.set("io", io);
 
-io.use(socketAuth);
+io.use(async (socket: any, next: (err?: Error) => void) => {
+    cookieParser()(socket.request as any, socket.request.res as any, async (err) => {
+        await isSocketAuth(err, socket, next);
+    });
+});
 
-io.on("connection", (socket: any) => {
+io.on("connection", (socket: Socket) => {
+    console.log("connected successfully");
     liveSockets.set(String(socket.user?._id), socket.id);
+    console.log("liveSockets", liveSockets);
     socket.on("disconnect", () => {
         console.log("disconnected");
     });
@@ -55,4 +61,4 @@ allApiRoutes(app);
 // global error handler middleware
 app.use(Errorhandler);
 
-export { app, server, io };
+export { app, io, liveSockets, server };

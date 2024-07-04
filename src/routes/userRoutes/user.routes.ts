@@ -23,7 +23,7 @@ export const userRoutes = (app: any) => {
     app.post("/api/user/login", login);
 
     // logout user
-    app.get("/api/user/logout", auth, loginSanitizer, handleValidatorError, logout);
+    app.get("/api/user/logout", auth, logout);
 
     // get my profile
     app.get("/api/user/profile", auth, getMyProfile);
