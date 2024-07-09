@@ -1,4 +1,5 @@
-import { io, liveSockets } from "../app.js";
+import { io } from "../app.js";
+import { liveSockets } from "../constants/socketState.js";
 
 const getSocketId = (userId: string) => {
     return liveSockets.get(userId);

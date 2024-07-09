@@ -25,4 +25,5 @@ export const refreshTokenOptions: CookieOptions = {
 
 export const socketEvent = {
     SENSORS_DATA: "SENSORS_DATA",
+    WANT_TRACKING_DATA: "WANT_TRACKING_DATA",
 };

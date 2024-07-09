@@ -5,10 +5,11 @@ import { createServer } from "http";
 import morgan from "morgan";
 import path from "path";
 import { Server, Socket } from "socket.io";
-import { __dirName } from "./constants/costants.js";
+import { __dirName, socketEvent } from "./constants/costants.js";
 import { isSocketAuth } from "./middlewares/auth.js";
 import { Errorhandler } from "./middlewares/errorHandler.js";
 import { allApiRoutes } from "./routes/index.routes.js";
+import { liveSockets, WantTrucksTrackingData } from "./constants/socketState.js";
 
 const app = express();
 const corsOptions = {
@@ -21,7 +22,6 @@ const corsOptions = {
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
 };
-const liveSockets = new Map();
 
 // middleware
 app.use(cors(corsOptions));
@@ -42,6 +42,12 @@ io.on("connection", (socket: Socket) => {
     console.log("connected successfully");
     liveSockets.set(String(socket.user?._id), socket.id);
     console.log("liveSockets", liveSockets);
+
+    socket.on(socketEvent.WANT_TRACKING_DATA, (truckId: string) => {
+        WantTrucksTrackingData.add(truckId);
+        console.log("truck ids for send data", WantTrucksTrackingData);
+    });
+
     socket.on("disconnect", () => {
         console.log("disconnected");
     });
@@ -66,4 +72,4 @@ allApiRoutes(app);
 // global error handler middleware
 app.use(Errorhandler);
 
-export { app, io, liveSockets, server };
+export { app, io, server };

@@ -92,26 +92,7 @@ const getSingleDeviceLatestData = TryCatch(async (req: Request, res: Response, n
 // add sensor data
 // ----------------
 const addSensorData = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
-    let { latitude, longitude, topic, payload } = req.body;
-
-    // for (let i = 0; i < 200; i++) {
-    //     setTimeout(async () => {
-    //         latitude = Number(latitude) + 0.001;
-    //         longitude = Number(longitude) + 0.001;
-    //         const topic = "fleet/truck_data";
-    //         const payload = {
-    //             uniqueId: "1245678",
-    //             ownerId: "666c14e3b9552ffe82c2e144",
-    //             gps: { latitude: Number(latitude), longitude: Number(longitude) },
-    //         };
-
-    //         const sensor = await Sensor.create({
-    //             topic,
-    //             payload: JSON.stringify(payload),
-    //         });
-    //     }, 1000);
-    // }
-
+    let { topic, payload } = req.body;
     const sensor = await Sensor.create({ topic, payload: JSON.stringify(payload) });
     res.status(200).json({ success: true, data: "data sended successfully" });
 });

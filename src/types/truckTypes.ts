@@ -13,6 +13,8 @@ interface SchemaTruckTypes extends TruckTypes {
     assignedTruck: Types.ObjectId | null;
     ownerId: string;
     status: string;
+    latitude: number;
+    longitude: number;
     createdAt: Date;
     updatedAt: Date;
 }

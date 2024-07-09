@@ -15,6 +15,8 @@ const truckSchema = new Schema<SchemaTruckTypes>(
         plateNumber: { type: Number, required: true },
         devices: { type: [Schema.Types.ObjectId], ref: "Device", default: [] },
         image: { type: imageSchema, required: true },
+        latitude: { type: Number },
+        longitude: { type: Number },
         status: { type: String, enum: truckStatusEnum, default: "not-connected" },
         assignedTo: { type: Types.ObjectId, ref: "Driver" },
     },
