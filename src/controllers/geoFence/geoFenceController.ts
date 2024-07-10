@@ -101,7 +101,7 @@ const removeTruckFromGeoFence = TryCatch(async (req: Request, res, next) => {
 
 const getAllGeoFences = TryCatch(async (req: Request, res, next) => {
     const ownerId = req.user?._id;
-    const geoFences = await GeoFence.find({ ownerId });
+    const geoFences = await GeoFence.find({ ownerId }).populate("trucks");
     res.status(200).json({ success: true, geoFences });
 });
 
