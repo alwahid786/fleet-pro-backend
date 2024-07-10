@@ -86,6 +86,19 @@ const addTruckAndArea = TryCatch(async (req: Request, res, next) => {
     res.status(200).json({ success: true, message: "Trucks Added Successfully Successfully" });
 });
 
+const removeTruckFromGeoFence = TryCatch(async (req: Request, res, next) => {
+    const ownerId = req.user?._id;
+    const geoFenceId = req?.params?.geoFenceId;
+    if (!isValidObjectId(geoFenceId)) return next(createHttpError(400, "Invalid GeoFence Id"));
+    const { truckId } = req.body;
+    if (!isValidObjectId(truckId)) return next(createHttpError(400, "Invalid Truck Id"));
+    const geoFence = await GeoFence.findOne({ _id: geoFenceId, ownerId });
+    if (!geoFence) return next(createHttpError(404, "GeoFence Not Found"));
+    geoFence.trucks = geoFence.trucks.filter((truck) => truck.toString() !== String(truckId));
+    await geoFence.save();
+    res.status(200).json({ success: true, message: "Trucks Removed Successfully Successfully" });
+});
+
 const getAllGeoFences = TryCatch(async (req: Request, res, next) => {
     const ownerId = req.user?._id;
     const geoFences = await GeoFence.find({ ownerId });
@@ -99,4 +112,5 @@ export {
     deleteSingleGeoFence,
     addTruckAndArea,
     getAllGeoFences,
+    removeTruckFromGeoFence,
 };

@@ -4,6 +4,7 @@ import {
     deleteSingleGeoFence,
     getAllGeoFences,
     getSingleGeoFence,
+    removeTruckFromGeoFence,
     updateSingleGeoFences,
 } from "../../controllers/geoFence/geoFenceController.js";
 import { auth } from "../../middlewares/auth.js";
@@ -20,6 +21,9 @@ export const geoFneceRoutes = (app: any) => {
 
     // add truck and area geofence
     app.put("/api/geofence/add-truck/:geoFenceId", auth, addTruckAndArea);
+
+    // remove truck from geofence
+    app.put("/api/geofence/remove-truck/:geoFenceId", auth, removeTruckFromGeoFence);
 
     // get all geofences
     app.get("/api/geofence/all", auth, getAllGeoFences);
