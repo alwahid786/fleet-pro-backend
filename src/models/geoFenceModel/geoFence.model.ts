@@ -10,7 +10,7 @@ const geoFenceSchema = new Schema<GeoFenceSchemaTypes>(
         startDate: { type: Date, required: true },
         endDate: { type: Date, required: true },
         trucks: { type: [Schema.Types.ObjectId], ref: "Truck", default: [] },
-        area: { type: String },
+        area: { type: { id: String, coordinates: [] } },
     },
     { timestamps: true }
 );

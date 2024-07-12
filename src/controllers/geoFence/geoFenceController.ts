@@ -62,9 +62,9 @@ const addTruckAndArea = TryCatch(async (req: Request, res, next) => {
     const ownerId = req.user?._id;
     const geoFenceId = req?.params?.geoFenceId;
     if (!isValidObjectId(geoFenceId)) return next(createHttpError(400, "Invalid GeoFence Id"));
-    const { trucks = [], area } = req.body;
-    if (trucks.length === 0) return next(createHttpError(400, "Trucks Not Provided"));
-    if (!area) return next(createHttpError(400, "Area Not Provided"));
+    const { trucks = [], area = [] } = req.body;
+    // if (trucks.length === 0) return next(createHttpError(400, "Trucks Not Provided"));
+    if (area.length === 0) return next(createHttpError(400, "Area Not Provided"));
     const geoFence = await GeoFence.findOne({ _id: geoFenceId, ownerId });
     if (!geoFence) return next(createHttpError(404, "GeoFence Not Found"));
     // validate trucks
@@ -76,14 +76,14 @@ const addTruckAndArea = TryCatch(async (req: Request, res, next) => {
 
     if (trucksExists.includes(false)) return next(createHttpError(404, "Some Trucks Not Found"));
     // update GeoFence
-    const setOfTrucks = new Set();
-    geoFence.trucks.forEach((truckId) => setOfTrucks.add(truckId.toString()));
-    trucks.forEach((truckId: string) => setOfTrucks.add(truckId.toString()));
-    const geoFenceTrucks = [...setOfTrucks];
-    geoFence.trucks = geoFenceTrucks as any;
+    // const setOfTrucks = new Set();
+    // geoFence.trucks.forEach((truckId) => setOfTrucks.add(truckId.toString()));
+    // trucks.forEach((truckId: string) => setOfTrucks.add(truckId.toString()));
+    // const geoFenceTrucks = [...setOfTrucks];
+    geoFence.trucks = trucks as any;
     geoFence.area = area;
     await geoFence.save();
-    res.status(200).json({ success: true, message: "Trucks Added Successfully Successfully" });
+    res.status(200).json({ success: true, message: "Trucks Updated Successfully" });
 });
 
 const removeTruckFromGeoFence = TryCatch(async (req: Request, res, next) => {

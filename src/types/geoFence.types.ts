@@ -6,7 +6,7 @@ interface GeoFenceTypes {
     startDate: Date;
     endDate: Date;
     alert: string;
-    area: string;
+    area: { id: string; coordinates: number[] };
 }
 
 interface GeoFenceSchemaTypes extends GeoFenceTypes {
