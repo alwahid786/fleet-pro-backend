@@ -28,7 +28,10 @@ const getSingleGeoFence = TryCatch(async (req: Request, res, next) => {
     const ownerId = req.user?._id;
     const geoFenceId = req?.params?.geoFenceId;
     if (!isValidObjectId(geoFenceId)) return next(createHttpError(400, "Invalid GeoFence Id"));
-    const geoFence = await GeoFence.findOne({ _id: geoFenceId, ownerId }).populate("trucks");
+    const geoFence = await GeoFence.findOne({ _id: geoFenceId, ownerId }).populate(
+        "trucks",
+        "latitude longitude truckName"
+    );
     if (!geoFence) return next(createHttpError(404, "GeoFence Not Found"));
     res.status(200).json({ success: true, geoFence });
 });

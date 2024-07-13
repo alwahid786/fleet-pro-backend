@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import { emitEvent } from "./socket.js";
-import { socketEvent } from "../constants/costants.js";
-import { WantTrucksTrackingData } from "../constants/socketState.js";
+import { socketEvent, watchPolygonTrucksData } from "../constants/socketState.js";
 import { Truck } from "../models/truckModel/truck.model.js";
+import { emitEvent } from "./socket.js";
 
 const sensorWatcher = () => {
     const sensorsCollection = mongoose.connection.collection("sensors");
@@ -15,16 +14,13 @@ const sensorWatcher = () => {
             const ownerId = payload.ownerId;
             const truckLatitude = payload.gps.latitude;
             const truckLongitude = payload.gps.longitude;
-
-            console.log("data while live tracking", truckId, ownerId, truckLatitude, truckLongitude);
-            if (WantTrucksTrackingData.has(truckId)) {
-                const updatedTruck = await Truck.findByIdAndUpdate(
+            if (watchPolygonTrucksData.has(String(truckId))) {
+                await Truck.findByIdAndUpdate(
                     truckId,
                     { latitude: truckLatitude, longitude: truckLongitude },
                     { new: true }
                 );
-                // console.log("New document inserted:", updatedTruck);
-                emitEvent(socketEvent.SENSORS_DATA, ownerId, updatedTruck);
+                emitEvent(socketEvent.GEOFENCE_TRUCKS_DATA, ownerId, "get single truck data data again");
             }
         }
     });

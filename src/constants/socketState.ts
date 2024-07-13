@@ -1,4 +1,10 @@
 const liveSockets = new Map();
-const WantTrucksTrackingData = new Set();
+const watchPolygonTrucksData = new Set();
 
-export { liveSockets, WantTrucksTrackingData };
+const socketEvent = {
+    SENSORS_DATA: "SENSORS_DATA",
+    WANT_TRACKING_DATA: "WANT_TRACKING_DATA",
+    GEOFENCE_TRUCKS_DATA: "GEOFENCE_TRUCKS_DATA",
+};
+
+export { liveSockets, watchPolygonTrucksData, socketEvent };

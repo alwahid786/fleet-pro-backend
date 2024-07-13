@@ -5,11 +5,12 @@ import { createServer } from "http";
 import morgan from "morgan";
 import path from "path";
 import { Server, Socket } from "socket.io";
-import { __dirName, socketEvent } from "./constants/costants.js";
+import { __dirName } from "./constants/costants.js";
 import { isSocketAuth } from "./middlewares/auth.js";
 import { Errorhandler } from "./middlewares/errorHandler.js";
 import { allApiRoutes } from "./routes/index.routes.js";
-import { liveSockets, WantTrucksTrackingData } from "./constants/socketState.js";
+import { liveSockets, socketEvent, watchPolygonTrucksData } from "./constants/socketState.js";
+import GeoFence from "./models/geoFenceModel/geoFence.model.js";
 
 const app = express();
 const corsOptions = {
@@ -27,9 +28,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 const server = createServer(app);
-const io = new Server(server, {
-    cors: corsOptions,
-});
+const io = new Server(server, { cors: corsOptions });
 app.set("io", io);
 
 io.use(async (socket: any, next: (err?: Error) => void) => {
@@ -43,9 +42,18 @@ io.on("connection", (socket: Socket) => {
     liveSockets.set(String(socket.user?._id), socket.id);
     console.log("liveSockets", liveSockets);
 
-    socket.on(socketEvent.WANT_TRACKING_DATA, (truckId: string) => {
-        WantTrucksTrackingData.add(truckId);
-        console.log("truck ids for send data", WantTrucksTrackingData);
+    // get and add all trucks ids which are in geofences and add them to watchPolygonTrucksData
+    GeoFence.find().then((geoFences) => {
+        const truckIds = geoFences.map((geoFence) => geoFence.trucks.map((truck) => truck.toString()));
+        const flattenedTruckIds = truckIds.flat();
+        const uniqueTruckIdsSet = new Set(flattenedTruckIds);
+        uniqueTruckIdsSet.forEach((id) => watchPolygonTrucksData.add(id));
+        console.log(watchPolygonTrucksData);
+    });
+
+    socket.on(socketEvent.WANT_TRACKING_DATA, (truckIds: string[]) => {
+        truckIds.forEach((truckId) => watchPolygonTrucksData.add(String(truckId)));
+        console.log("truck ids for send data", watchPolygonTrucksData);
     });
 
     socket.on("disconnect", () => {
