@@ -1,8 +1,8 @@
+import { CookieOptions } from "express";
 import path from "path";
+import Stripe from "stripe";
 import { fileURLToPath } from "url";
 import { config } from "../config/config.js";
-import { CookiesOptionTypes } from "../types/globalTypes.js";
-import { CookieOptions } from "express";
 
 export const __dirName = fileURLToPath(import.meta.url);
 export const __fileName = path.dirname(__dirName);
@@ -22,3 +22,13 @@ export const refreshTokenOptions: CookieOptions = {
     secure: config.getEnv("NODE_ENV") !== "development",
     maxAge: Number(config.getEnv("REFRESH_TOKEN_MAX_AGE")),
 };
+
+// stripe constants
+export const myStripe: any = new Stripe(config.getEnv("STRIPE_SECRET_KEY"));
+export const stripePriceId = config.getEnv("SUBSCRIPTION_PRICE_ID");
+export const subscriptionTrialPeriodDays = config.getEnv("SUBSCRIPTION_TRIAL_PERIOD_DAYS");
+export const stripeWebhookSecret = config.getEnv("STRIPE_WEBHOOK_SECRET");
+
+export const stripeSuccessUrl = config.getEnv("SUBSCRIPTION_SUCCESS_URL");
+export const stripeCancelUrl = config.getEnv("SUBSCRIPTION_CANCEL_URL");
+export const stripeReturnUrl = config.getEnv("SUBSCRIPTION_RETURN_URL");

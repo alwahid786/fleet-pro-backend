@@ -18,6 +18,7 @@ const register = TryCatch(async (req: Request<{}, {}, UserTypes>, res, next) => 
     // get all body data and validate
     const { firstName, lastName, email, address, phoneNumber, password } = req.body;
     const image: Express.Multer.File | undefined = req.file;
+    console.log("req.file ", req.file);
     if (!image) return next(createHttpError(400, "Please Upload Profile Image"));
     // check user email is already exists
     const emailExists = await User.exists({ email });
@@ -41,21 +42,26 @@ const register = TryCatch(async (req: Request<{}, {}, UserTypes>, res, next) => 
     });
     if (!user) return next(createHttpError(400, "Some Error While Creating User"));
     // create verification url and send mail to user for verification
-    const verificationToken = await JWTService().accessToken(String(user._id));
+    const verificationToken = await JWTService().createVerificationToken(String(user._id));
     const backendUrl: string = config.getEnv("SERVER_URL");
     const verificationUrl = `${backendUrl}/verify-email.html?verificationUrl=${encodeURIComponent(
         backendUrl + "/api/user/verify?token=" + verificationToken
     )}`;
     const message = `Please click the link below to verify your email address: ${verificationUrl}`;
     const isMailSent = await sendMail(user?.email, "Email Verification", message);
-    if (!isMailSent) return next(createHttpError(500, "Some Error Occurred While Sending Mail"));
+    if (!isMailSent) {
+        await User.findByIdAndDelete(user._id);
+        return next(createHttpError(500, "Please Enter a Valid Email Address and Try Again"));
+    }
     // make and store access and refresh token in cookies
     const accessToken = await JWTService().accessToken(String(user._id));
     const refreshToken = await JWTService().refreshToken(String(user._id));
     await JWTService().storeRefreshToken(String(refreshToken));
     res.cookie("accessToken", accessToken, accessTokenOptions);
     res.cookie("refreshToken", refreshToken, refreshTokenOptions);
-    return res.status(201).json({ message: "User created successfully" });
+    return res
+        .status(201)
+        .json({ message: "A Verification Url is Sent to Your Email. Please Verify Your Account First" });
 });
 //--------------------
 // VERIFY REGISTRATION
@@ -73,10 +79,46 @@ const verifyRegistration = TryCatch(async (req: Request<{}, {}, { token: string 
     const user = await User.findById(decodedToken);
     if (!user)
         return res.status(400).sendFile(path.join(__dirName, "../../../public/verificationFailed.html"));
+
+    user.isVerified = true;
     // update user
     await user.save();
     res.status(200).sendFile(path.join(__dirName, "../../../public/verifiedSuccess.html"));
 });
+
+// --------------------------
+// get verification url again
+// --------------------------
+
+const getVerificationUrlAgain = TryCatch(async (req, res, next) => {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) return next(createHttpError(401, "Please Login First"));
+    let decodedToken: any;
+    try {
+        decodedToken = await JWTService().verifyRefreshToken(refreshToken);
+    } catch (err) {
+        return next(createHttpError(401, "Please Login First"));
+    }
+    // find user
+    const userId = decodedToken?._id;
+    if (!userId) return next(createHttpError(401, "Please Login First"));
+    const user = await User.findById(userId);
+    if (!user) return next(createHttpError(404, "User Not Found"));
+    if (user?.isVerified) return next(createHttpError(400, "User Already Verified"));
+    // create verification url and send mail to user for verification
+    const verificationToken = await JWTService().createVerificationToken(String(user._id));
+    const backendUrl: string = config.getEnv("SERVER_URL");
+    const verificationUrl = `${backendUrl}/verify-email.html?verificationUrl=${encodeURIComponent(
+        backendUrl + "/api/user/verify?token=" + verificationToken
+    )}`;
+    const message = `Please click the link below to verify your email address: ${verificationUrl}`;
+    const isMailSent = await sendMail(user?.email, "Email Verification", message);
+    if (!isMailSent) {
+        return next(createHttpError(500, "Please Enter a Valid Email Address and Try Again"));
+    }
+    return res.status(200).json({ success: true, message: "A Verification Url is Sent to Your Email" });
+});
+
 //----------
 // login
 //----------
@@ -195,6 +237,7 @@ export {
     logout,
     register,
     resetPassword,
+    getVerificationUrlAgain,
     verifyRegistration,
     getNewAccessToken,
     getMyProfile,

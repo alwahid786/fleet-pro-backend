@@ -1,6 +1,7 @@
 import {
     forgetPassword,
     getMyProfile,
+    getVerificationUrlAgain,
     login,
     logout,
     register,
@@ -8,6 +9,7 @@ import {
     verifyRegistration,
 } from "../../controllers/user/userController.js";
 import { auth } from "../../middlewares/auth.js";
+import { singleUpload } from "../../middlewares/multer.js";
 import handleValidatorError from "../../middlewares/validationHandler.js";
 import {
     forgetPasswordSanitizer,
@@ -17,8 +19,9 @@ import {
 
 export const userRoutes = (app: any) => {
     // register user
-    app.post("/api/user/register", registerSanitizer, handleValidatorError, register);
+    app.post("/api/user/register", singleUpload, registerSanitizer, handleValidatorError, register);
 
+    app.get("/api/user/verification-url", auth, getVerificationUrlAgain);
     // login user
     app.post("/api/user/login", login);
 

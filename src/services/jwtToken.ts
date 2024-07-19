@@ -46,5 +46,17 @@ export const JWTService = () => {
                 throw createHttpError(400, error?.message || error || "Failed to remove refresh token");
             }
         },
+
+        // create access token
+        async createVerificationToken(_id: string) {
+            return jwt.sign({ _id }, config.getEnv("ACCESS_TOKEN_SECRET"), {
+                expiresIn: config.getEnv("ACCESS_TOKEN_EXPIRY_TIME"),
+            });
+        },
+
+        // verify verification token
+        async verifyVerificationToken(token: string) {
+            return jwt.verify(token, config.getEnv("ACCESS_TOKEN_SECRET"));
+        },
     };
 };
