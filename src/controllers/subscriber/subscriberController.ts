@@ -91,7 +91,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
     if (!signature) return next(createHttpError(400, "Signature Not Found"));
     let event;
     try {
-        event = myStripe.webhooks.constructEvent(req.body, signature, stripeWebhookSecret);
+        event = await myStripe.webhooks.constructEvent(req.body, signature, stripeWebhookSecret);
     } catch (err: any) {
         return next(createHttpError(400, `Webhook Error: ${err.message}`));
     }
