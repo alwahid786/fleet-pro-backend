@@ -11,6 +11,7 @@ import { Errorhandler } from "./middlewares/errorHandler.js";
 import { allApiRoutes } from "./routes/index.routes.js";
 import { liveSockets, socketEvent, watchPolygonTrucksData } from "./constants/socketState.js";
 import GeoFence from "./models/geoFenceModel/geoFence.model.js";
+import bodyParser from "body-parser";
 
 const app = express();
 const corsOptions = {
@@ -26,6 +27,10 @@ const corsOptions = {
 
 // middleware
 app.use(cors(corsOptions));
+
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(cookieParser());
 
 const server = createServer(app);
 const io = new Server(server, { cors: corsOptions });
@@ -60,11 +65,6 @@ io.on("connection", (socket: Socket) => {
         console.log("disconnected");
     });
 });
-
-// console.log(config.getEnv("CORS_ORIGIN"));
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cookieParser());
 
 app.get("/", (req, res) => {
     res.json({
