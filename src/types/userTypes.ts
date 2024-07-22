@@ -10,7 +10,10 @@ interface UserSchemaTypes extends UserTypes {
     _id: string;
     role: string;
     isVerified: boolean;
-
+    subscription: {
+        subscriberId: string;
+        paid_sub: boolean;
+    };
     image: { url: string; public_id: string };
     createdAt: Date;
     updatedAt: Date;

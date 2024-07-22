@@ -32,3 +32,7 @@ export const stripeWebhookSecret = config.getEnv("STRIPE_WEBHOOK_SECRET");
 export const stripeSuccessUrl = config.getEnv("SUBSCRIPTION_SUCCESS_URL");
 export const stripeCancelUrl = config.getEnv("SUBSCRIPTION_CANCEL_URL");
 export const stripeReturnUrl = config.getEnv("SUBSCRIPTION_RETURN_URL");
+
+export const stripeMonthlyPrice = "price_1PfL4vFThvHN5fHL9uAV1TWw";
+export const stripeYearlyPrice = "price_1PfL79FThvHN5fHLmo9XrXQa";
+export const stripeLifetimePrice = "price_1PfL8WFThvHN5fHLnvScngMM";

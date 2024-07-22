@@ -1,11 +1,12 @@
 import { Schema, model } from "mongoose";
+import SubscriberTypes from "../../types/subscriberTypes.js";
 
-const subscriptionSchema = new Schema(
+const subscriptionSchema = new Schema<SubscriberTypes>(
     {
         user: { type: Schema.Types.ObjectId, ref: "User", required: true },
         stripeCustomerId: { type: String, required: true, unique: true },
         stripeSubscriptionId: { type: String, required: true },
-        paymentMethod: { type: Array, required: true },
+        paymentMethod: { type: [], required: true },
         priceId: { type: String, required: true },
         subscriptionStatus: {
             type: String,

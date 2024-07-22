@@ -8,12 +8,12 @@ import { TryCatch, TryCatchSocket } from "../utils/tryCatch.js";
 
 declare module "express-serve-static-core" {
     interface Request {
-        user?: { _id: string; role: string };
+        user?: { _id: string; role: string; email: string };
     }
 }
 declare module "socket.io" {
     interface Socket {
-        user?: { _id: string; role: string };
+        user?: { _id: string; role: string; email: string };
         cookies?: { [key: string]: string };
     }
 }
@@ -32,15 +32,15 @@ export const auth = TryCatch(async (req: Request, res: Response, next: NextFunct
         let receivedUser: any;
         if (accessToken) {
             verifyToken = await JWTService().verifyAccessToken(accessToken);
-            const user = await User.findById(verifyToken._id).select(["_id", "role"]);
+            const user = await User.findById(verifyToken._id).select(["_id", "role", "email"]);
             if (!user) return next(createHttpError(401, "Unauthorized user please login"));
-            receivedUser = { _id: String(user._id), role: user?.role };
+            receivedUser = { _id: String(user._id), role: user?.role, email: user?.email };
         } else {
             const refreshToken = req.cookies?.refreshToken;
             if (!refreshToken) return next(createHttpError(401, "Unauthorized user please login"));
             verifyToken = await JWTService().verifyRefreshToken(refreshToken);
             if (verifyToken) {
-                const user = await User.findById(verifyToken._id).select(["_id", "role"]);
+                const user = await User.findById(verifyToken._id).select(["_id", "role", "email"]);
                 if (!user) return next(createHttpError(401, "Unauthorized user please login"));
                 // create new access and refresh token
                 const [newAccessToken, newRefreshToken] = await Promise.all([
@@ -54,7 +54,7 @@ export const auth = TryCatch(async (req: Request, res: Response, next: NextFunct
                 ]);
                 res.cookie("accessToken", newAccessToken, accessTokenOptions);
                 res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
-                receivedUser = { _id: String(user._id), role: user?.role };
+                receivedUser = { _id: String(user._id), role: user?.role, email: user?.email };
             }
         }
         req.user = receivedUser;
@@ -77,16 +77,16 @@ export const isSocketAuth = TryCatchSocket(async (err: Error, socket: any, next:
         let receivedUser: any;
         if (accessToken) {
             verifyToken = await JWTService().verifyAccessToken(accessToken);
-            const user = await User.findById(verifyToken._id).select(["_id", "role"]);
+            const user = await User.findById(verifyToken._id).select(["_id", "role", "email"]);
             if (!user) return next(createHttpError(401, "Unauthorized user please login"));
-            receivedUser = { _id: String(user._id), role: user?.role };
+            receivedUser = { _id: String(user._id), role: user?.role, email: user?.email };
         } else {
             const refreshToken = socket.request.cookies?.refreshToken;
             if (!refreshToken) return next(createHttpError(401, "Unauthorized user please login"));
             verifyToken = await JWTService().verifyRefreshToken(refreshToken);
-            const user = await User.findById(verifyToken._id).select(["_id", "role"]);
+            const user = await User.findById(verifyToken._id).select(["_id", "role", "email"]);
             if (!user) return next(createHttpError(401, "Unauthorized user please login"));
-            receivedUser = { _id: String(user._id), role: user?.role };
+            receivedUser = { _id: String(user._id), role: user?.role, email: user?.email };
         }
         socket.user = receivedUser;
         next();

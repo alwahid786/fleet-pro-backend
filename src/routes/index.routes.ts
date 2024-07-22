@@ -5,6 +5,7 @@ import { truckRoutes } from "./truckRoutes/truck.routes.js";
 import { adminRoutes } from "./adminRoutes/admin.routes.js";
 import { deviceRoutes } from "./deviceRoutes/device.routes.js";
 import { geoFneceRoutes } from "./geoFensRoutes/geoFens.routes.js";
+import { subscriptionRoutes } from "./subscriptionRoutes/subscription.routes.js";
 
 export const allApiRoutes = (app: any) => {
     // user routes
@@ -27,4 +28,7 @@ export const allApiRoutes = (app: any) => {
 
     // geoFence routes
     geoFneceRoutes(app);
+
+    // subscription routes
+    subscriptionRoutes(app);
 };

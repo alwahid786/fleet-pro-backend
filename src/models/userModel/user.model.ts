@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema<UserSchemaTypes>(
         password: { type: String, required: true },
         role: { type: String, default: "user" },
         isVerified: { type: Boolean, default: false },
+        subscription: {
+            subscriberId: { type: mongoose.Schema.Types.ObjectId, ref: "Subscriber" },
+            paid_sub: { type: Boolean, default: false },
+        },
     },
     { timestamps: true }
 );

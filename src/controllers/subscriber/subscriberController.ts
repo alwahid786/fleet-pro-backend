@@ -6,6 +6,9 @@ import {
     stripeSuccessUrl,
     stripeWebhookSecret,
     subscriptionTrialPeriodDays,
+    stripeMonthlyPrice,
+    stripeYearlyPrice,
+    stripeLifetimePrice,
 } from "../../constants/costants.js";
 import Subscriber from "../../models/subscriptionModel/subscription.model.js";
 import { User } from "../../models/userModel/user.model.js";
@@ -15,16 +18,31 @@ import { TryCatch } from "../../utils/tryCatch.js";
 // -----------------------------------------------------------------------------
 
 export const createStripeSession = TryCatch(async (req, res, next) => {
-    const { email, id: userId } = req.user;
+    const { email, _id: userId } = req.user;
+    const { plan } = req.body; // Get the plan from the request body
+    if (!email || !userId) return next(createHttpError(400, "Please Login to create Subscription"));
+    if (!plan) return next(createHttpError(400, "Please select a subscription plan"));
+
+    let priceId;
+    if (plan === "monthly") {
+        priceId = stripeMonthlyPrice;
+    } else if (plan === "yearly") {
+        priceId = stripeYearlyPrice;
+    } else if (plan === "lifetime") {
+        priceId = stripeLifetimePrice;
+    } else {
+        return next(createHttpError(400, "Invalid subscription plan selected"));
+    }
+
     let customer;
-    // check existing customer and retrieve if exist
+    // Check existing customer and retrieve if exist
     const isCustomerExist = await myStripe.customers.list({
         email,
         limit: 1,
     });
     if (isCustomerExist?.data?.length > 0) {
         customer = isCustomerExist.data[0];
-        // check if any subscription exist for this customer
+        // Check if any subscription exist for this customer
         const subscription = await myStripe.subscriptions.list({
             customer: customer?.id,
             status: "active",
@@ -38,7 +56,7 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
             return res.status(200).json({ success: true, redirect_url: stripeSession.url });
         }
     } else {
-        // create a new customer if it is not exist
+        // Create a new customer if it does not exist
         customer = await myStripe.customers.create({
             email,
             metadata: { userId },
@@ -54,21 +72,12 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
         billing_address_collection: "auto",
         line_items: [
             {
-                price_data: {
-                    currency: "pkr",
-                    product_data: {
-                        name: "user subscription",
-                        description: "user monthly subscription",
-                    },
-                    unit_amount: 500 * 100,
-                    recurring: { interval: "month" },
-                },
+                price: priceId,
                 quantity: 1,
             },
         ],
         metadata: { userId },
         customer: customer.id,
-        trial_period_days: Number(subscriptionTrialPeriodDays),
     });
     res.status(200).json({ success: true, sessionId: session.id });
 });
@@ -77,8 +86,8 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
 // -------------------------------------------------------------------------
 
 export const addNewSubscription = TryCatch(async (req, res, next) => {
+    console.log("i am called from stripe");
     const signature = req.headers["stripe-signature"];
-
     if (!signature) return next(createHttpError(400, "Signature Not Found"));
     let event;
     try {
@@ -88,24 +97,28 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
     }
 
     if (event.type === "invoice.payment_succeeded") {
-        const invoice: any = event.data.object;
-        const [subscription, customer]: [any, any] = await Promise.all([
+        const invoice = event.data.object;
+        const [subscription, customer] = await Promise.all([
             myStripe.subscriptions.retrieve(invoice.subscription),
             myStripe.customers.retrieve(invoice.customer),
         ]);
         if (!subscription) return next(createHttpError(404, "Subscription Not Found"));
         if (!customer) return next(createHttpError(404, "Customer Not Found"));
+
+        const subscriptionData = {
+            user: customer.metadata.userId,
+            stripeCustomerId: customer.id,
+            stripeSubscriptionId: subscription.id,
+            paymentMethod: subscription.payment_method_types,
+            priceId: subscription.items.data[0].price.id,
+            subscriptionStatus: subscription.status,
+            subscriptionStartDate: new Date(subscription.current_period_start * 1000),
+            subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+            billingAddress: subscription.billing_reason,
+        };
+
         if (invoice.billing_reason === "subscription_create") {
-            const newSubscription = await Subscriber.create({
-                SubscriberId: customer.metadata.userId,
-                stripeCustomerId: customer.id,
-                stripeSubscriptionId: subscription.id,
-                paymentMethod: subscription.payment_method_types,
-                priceId: subscription.items.data[0].price.id,
-                subscriptionStatus: subscription.status,
-                subscriptionStartDate: new Date(subscription.current_period_start * 1000),
-                subscriptionEndDate: new Date(subscription.current_period_end * 1000),
-            });
+            const newSubscription = await Subscriber.create(subscriptionData);
             if (!newSubscription) {
                 return next(createHttpError(500, "Error Occurred While Creating Subscription"));
             }
@@ -119,10 +132,10 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             invoice.billing_reason === "subscription_update"
         ) {
             const updateSubscription = await Subscriber.updateOne(
-                { userId: customer.metadata.userId },
+                { user: customer.metadata.userId },
                 {
-                    subscriptionEndDate: new Date(subscription.current_period_end * 1000),
-                    subscriptionStartDate: new Date(subscription.current_period_start * 1000),
+                    subscriptionEndDate: subscriptionData.subscriptionEndDate,
+                    subscriptionStartDate: subscriptionData.subscriptionStartDate,
                 }
             );
             if (!updateSubscription)
@@ -130,6 +143,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         }
         return res.status(201).json({ success: true, message: "You Subscribed Successfully" });
     }
+
     if (event.type === "customer.subscription.updated") {
         const subscription = event.data.object;
         if (subscription.cancel_at_period_end) {

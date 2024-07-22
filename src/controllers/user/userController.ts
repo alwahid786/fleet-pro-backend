@@ -44,11 +44,75 @@ const register = TryCatch(async (req: Request<{}, {}, UserTypes>, res, next) => 
     // create verification url and send mail to user for verification
     const verificationToken = await JWTService().createVerificationToken(String(user._id));
     const backendUrl: string = config.getEnv("SERVER_URL");
-    const verificationUrl = `${backendUrl}/verify-email.html?verificationUrl=${encodeURIComponent(
-        backendUrl + "/api/user/verify?token=" + verificationToken
-    )}`;
-    const message = `Please click the link below to verify your email address: ${verificationUrl}`;
-    const isMailSent = await sendMail(user?.email, "Email Verification", message);
+    const verificationUrl = `${backendUrl}/api/user/verify?token=${verificationToken}`;
+    const message = `
+    <html>
+    <head>
+        <title>Email Verification</title>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 600px;
+                margin: 50px auto;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                background-color: #fff;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            h2 {
+                color: #007BFF;
+                text-align: center;
+            }
+            p {
+                font-size: 16px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            .button {
+                display: block;
+                width: 200px;
+                margin: 20px auto;
+                padding: 15px;
+                font-size: 16px;
+                color: white !important;
+                background-color: #007BFF;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            }
+            .button:hover {
+                background-color: #0056b3;
+            }
+            .footer {
+                margin-top: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #aaa;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Welcome To Fleet Management, ${firstName} ${lastName}!</h2>
+            <p>Thank you for registering. Please click the button below to verify your email address:</p>
+            <a href="${verificationUrl}" class="button">Verify Email</a>
+            <div class="footer">
+                <p>&copy; 2024 Fleet Management. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+    const isMailSent = await sendMail(user?.email, "Email Verification", message, true);
     if (!isMailSent) {
         await User.findByIdAndDelete(user._id);
         return next(createHttpError(500, "Please Enter a Valid Email Address and Try Again"));
@@ -108,11 +172,75 @@ const getVerificationUrlAgain = TryCatch(async (req, res, next) => {
     // create verification url and send mail to user for verification
     const verificationToken = await JWTService().createVerificationToken(String(user._id));
     const backendUrl: string = config.getEnv("SERVER_URL");
-    const verificationUrl = `${backendUrl}/verify-email.html?verificationUrl=${encodeURIComponent(
-        backendUrl + "/api/user/verify?token=" + verificationToken
-    )}`;
-    const message = `Please click the link below to verify your email address: ${verificationUrl}`;
-    const isMailSent = await sendMail(user?.email, "Email Verification", message);
+    const verificationUrl = `${backendUrl}/api/user/verify?token=${verificationToken}`;
+    const message = `
+    <html>
+    <head>
+        <title>Email Verification</title>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 600px;
+                margin: 50px auto;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                background-color: #fff;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            h2 {
+                color: #007BFF;
+                text-align: center;
+            }
+            p {
+                font-size: 16px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            .button {
+                display: block;
+                width: 200px;
+                margin: 20px auto;
+                padding: 15px;
+                font-size: 16px;
+                color: white !important;
+                background-color: #007BFF;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            }
+            .button:hover {
+                background-color: #0056b3;
+            }
+            .footer {
+                margin-top: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #aaa;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Welcome To Fleet Management, ${user?.firstName} ${user?.lastName}!</h2>
+            <p>Thank you for registering. Please click the button below to verify your email address:</p>
+            <a href="${verificationUrl}" class="button">Verify Email</a>
+            <div class="footer">
+                <p>&copy; 2024 Fleet Management. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+    const isMailSent = await sendMail(user?.email, "Email Verification", message, true);
     if (!isMailSent) {
         return next(createHttpError(500, "Please Enter a Valid Email Address and Try Again"));
     }
