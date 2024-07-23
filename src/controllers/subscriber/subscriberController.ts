@@ -107,10 +107,10 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         return next(createHttpError(400, `Webhook Error: ${err.message}`));
     }
 
-    if (event.type === "invoice.payment_succeeded") {
-        const invoice = event.data.object;
-        const [subscription, customer] = await Promise.all([
-            myStripe.subscriptions.retrieve(invoice.subscription),
+    if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
+        const invoice: any = event.data.object;
+        const [subscription, customer]: any = await Promise.all([
+            myStripe.subscriptions.retrieve(invoice.id),
             myStripe.customers.retrieve(invoice.customer),
         ]);
         if (!subscription) return next(createHttpError(404, "Subscription Not Found"));
@@ -120,15 +120,15 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             user: customer.metadata.userId,
             stripeCustomerId: customer.id,
             stripeSubscriptionId: subscription.id,
-            paymentMethod: subscription.payment_method_types,
+            paymentMethod: subscription.default_payment_method,
             priceId: subscription.items.data[0].price.id,
             subscriptionStatus: subscription.status,
             subscriptionStartDate: new Date(subscription.current_period_start * 1000),
             subscriptionEndDate: new Date(subscription.current_period_end * 1000),
-            billingAddress: subscription.billing_reason,
+            billingAddress: subscription.billing_cycle_anchor,
         };
 
-        if (invoice.billing_reason === "subscription_create") {
+        if (event.type === "customer.subscription.created") {
             const newSubscription = await Subscriber.create(subscriptionData);
             if (!newSubscription) {
                 return next(createHttpError(500, "Error Occurred While Creating Subscription"));
@@ -138,10 +138,8 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
                 "subscription.subscriptionCollectionId": newSubscription._id,
             });
             if (!updateUser) return next(createHttpError(500, "Error Occurred While Updating User"));
-        } else if (
-            invoice.billing_reason === "subscription_cycle" ||
-            invoice.billing_reason === "subscription_update"
-        ) {
+            return res.status(201).json({ success: true, message: "You Subscribed Successfully" });
+        } else if (event.type === "customer.subscription.updated") {
             const updateSubscription = await Subscriber.updateOne(
                 { user: customer.metadata.userId },
                 {
@@ -149,44 +147,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
                     subscriptionStartDate: subscriptionData.subscriptionStartDate,
                 }
             );
-            if (!updateSubscription)
-                return next(createHttpError(500, "Error Occurred While Updating Subscription"));
         }
-        return res.status(201).json({ success: true, message: "You Subscribed Successfully" });
-    }
-
-    if (event.type === "customer.subscription.updated") {
-        const subscription = event.data.object;
-        if (subscription.cancel_at_period_end) {
-            const [updateSubscription, updateUser] = await Promise.all([
-                Subscriber.updateOne(
-                    { stripeSubscriptionId: subscription.id },
-                    { subscriptionStatus: "canceled" }
-                ),
-                User.findByIdAndUpdate(subscription.metadata.userId, {
-                    "subscription.paid_sub": false,
-                }),
-            ]);
-            if (!updateSubscription)
-                return next(createHttpError(500, "Error Occurred While Canceling Subscription"));
-            if (!updateUser)
-                return next(createHttpError(500, "Error Occurred While Canceling User Subscription"));
-            return res.status(200).json({ success: true, message: "Subscription Canceled" });
-        } else {
-            const [updateSubscription, updateUser] = await Promise.all([
-                Subscriber.updateOne(
-                    { stripeSubscriptionId: subscription.id },
-                    { subscriptionStatus: "renewed" }
-                ),
-                User.findByIdAndUpdate(subscription.metadata.userId, {
-                    "subscription.paid_sub": true,
-                }),
-            ]);
-            if (!updateSubscription)
-                return next(createHttpError(500, "Error Occurred While Renewing Subscription"));
-            if (!updateUser)
-                return next(createHttpError(500, "Error Occurred While Renewing User Subscription"));
-            return res.status(200).json({ success: true, message: "Subscription Restarted" });
-        }
+        return res.status(201).json({ success: true, message: "You Subscription Updated Successfully" });
     }
 });
