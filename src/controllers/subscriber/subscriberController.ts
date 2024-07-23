@@ -88,7 +88,7 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
 export const addNewSubscription = TryCatch(async (req, res, next) => {
     console.log("i am called from stripe");
     const signature = req.headers["stripe-signature"];
-    const payload = req.body;
+    const payload = Buffer.from(JSON.stringify(req.body), "base64").toString("utf8");
     // console.log("raw body", payload);
     if (!signature) return next(createHttpError(400, "Signature Not Found"));
     let event;
