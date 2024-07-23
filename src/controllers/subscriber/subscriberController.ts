@@ -87,7 +87,7 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
 
 export const addNewSubscription = TryCatch(async (req, res, next) => {
     console.log("i am called from stripe");
-    const rawBody = JSON.stringify(req.body);
+    const rawBody = req.body;
     const signature = req.headers["stripe-signature"];
     console.log("raw body of stripe ", rawBody);
     console.log("signature of stripe ", signature);
