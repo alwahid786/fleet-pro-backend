@@ -86,12 +86,10 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
 // -------------------------------------------------------------------------
 
 export const addNewSubscription = TryCatch(async (req, res, next) => {
-    console.log("i am called from stripe");
+    console.log("Webhook received from Stripe");
 
     const signature = req.headers["stripe-signature"];
     const payload = req.body;
-    // console.log("raw body", payload);
-
     const payloadString = JSON.stringify(payload);
 
     const header = myStripe.webhooks.generateTestHeaderString({
@@ -102,52 +100,89 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
     let event;
     try {
         event = await myStripe.webhooks.constructEvent(payloadString, header, stripeWebhookSecret);
-        console.log("event of stripe ", event);
+        console.log("Stripe event: ", event);
     } catch (err: any) {
         return next(createHttpError(400, `Webhook Error: ${err.message}`));
     }
 
-    if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
-        const invoice: any = event.data.object;
-        const [subscription, customer]: any = await Promise.all([
-            myStripe.subscriptions.retrieve(invoice.id),
-            myStripe.customers.retrieve(invoice.customer),
-        ]);
-        if (!subscription) return next(createHttpError(404, "Subscription Not Found"));
-        if (!customer) return next(createHttpError(404, "Customer Not Found"));
+    const subscription: any = event.data.object;
+    const customer: any = await myStripe.customers.retrieve(subscription.customer);
 
-        const subscriptionData = {
-            user: customer.metadata.userId,
-            stripeCustomerId: customer.id,
-            stripeSubscriptionId: subscription.id,
-            paymentMethod: subscription.default_payment_method,
-            priceId: subscription.items.data[0].price.id,
-            subscriptionStatus: subscription.status,
-            subscriptionStartDate: new Date(subscription.current_period_start * 1000),
-            subscriptionEndDate: new Date(subscription.current_period_end * 1000),
-            billingAddress: subscription.billing_cycle_anchor,
-        };
+    if (!customer) return next(createHttpError(404, "Customer Not Found"));
 
-        if (event.type === "customer.subscription.created") {
+    const subscriptionData = {
+        user: customer.metadata.userId,
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+        paymentMethod: subscription.default_payment_method,
+        priceId: subscription.items.data[0].price.id,
+        subscriptionStatus: subscription.status,
+        subscriptionStartDate: new Date(subscription.current_period_start * 1000),
+        subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+    };
+
+    switch (event.type) {
+        case "customer.subscription.created":
             const newSubscription = await Subscriber.create(subscriptionData);
             if (!newSubscription) {
                 return next(createHttpError(500, "Error Occurred While Creating Subscription"));
             }
-            const updateUser = await User.findByIdAndUpdate(customer.metadata.userId, {
+            const createUser = await User.findByIdAndUpdate(customer.metadata.userId, {
                 "subscription.paid_sub": true,
                 "subscription.subscriptionCollectionId": newSubscription._id,
             });
-            if (!updateUser) return next(createHttpError(500, "Error Occurred While Updating User"));
-            return res.status(201).json({ success: true, message: "You Subscribed Successfully" });
-        } else if (event.type === "customer.subscription.updated") {
+            if (!createUser) return next(createHttpError(500, "Error Occurred While Updating User"));
+            return res.status(201).json({ success: true, message: "Subscription Created" });
+
+        case "customer.subscription.updated":
             const updateSubscription = await Subscriber.updateOne(
-                { user: customer.metadata.userId },
-                {
-                    subscriptionEndDate: subscriptionData.subscriptionEndDate,
-                    subscriptionStartDate: subscriptionData.subscriptionStartDate,
-                }
+                { stripeSubscriptionId: subscription.id },
+                { subscriptionStatus: subscription.status }
             );
-        }
-        return res.status(201).json({ success: true, message: "You Subscription Updated Successfully" });
+            if (!updateSubscription)
+                return next(createHttpError(500, "Error Occurred While Updating Subscription"));
+            return res.status(200).json({ success: true, message: "Subscription Updated" });
+
+        case "customer.subscription.deleted":
+            const deleteSubscription = await Subscriber.updateOne(
+                { stripeSubscriptionId: subscription.id },
+                { subscriptionStatus: "deleted" }
+            );
+            if (!deleteSubscription)
+                return next(createHttpError(500, "Error Occurred While Deleting Subscription"));
+            const deleteUser = await User.findByIdAndUpdate(subscription.metadata.userId, {
+                "subscription.paid_sub": false,
+            });
+            if (!deleteUser) return next(createHttpError(500, "Error Occurred While Updating User"));
+            return res.status(200).json({ success: true, message: "Subscription Deleted" });
+
+        case "customer.subscription.paused":
+            const pauseSubscription = await Subscriber.updateOne(
+                { stripeSubscriptionId: subscription.id },
+                { subscriptionStatus: "paused" }
+            );
+            if (!pauseSubscription)
+                return next(createHttpError(500, "Error Occurred While Pausing Subscription"));
+            const pauseUser = await User.findByIdAndUpdate(subscription.metadata.userId, {
+                "subscription.paid_sub": false,
+            });
+            if (!pauseUser) return next(createHttpError(500, "Error Occurred While Updating User"));
+            return res.status(200).json({ success: true, message: "Subscription Paused" });
+
+        case "customer.subscription.resumed":
+            const resumeSubscription = await Subscriber.updateOne(
+                { stripeSubscriptionId: subscription.id },
+                { subscriptionStatus: "active" }
+            );
+            if (!resumeSubscription)
+                return next(createHttpError(500, "Error Occurred While Resuming Subscription"));
+            const resumeUser = await User.findByIdAndUpdate(subscription.metadata.userId, {
+                "subscription.paid_sub": true,
+            });
+            if (!resumeUser) return next(createHttpError(500, "Error Occurred While Updating User"));
+            return res.status(200).json({ success: true, message: "Subscription Resumed" });
+
+        default:
+            return res.status(400).json({ success: false, message: "Unhandled Event Type" });
     }
 });

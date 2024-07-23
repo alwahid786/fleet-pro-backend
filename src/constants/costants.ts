@@ -24,7 +24,7 @@ export const refreshTokenOptions: CookieOptions = {
 };
 
 // stripe constants
-export const myStripe: Stripe = new Stripe(config.getEnv("STRIPE_SECRET_KEY"));
+export const myStripe = new Stripe(config.getEnv("STRIPE_SECRET_KEY"));
 export const stripePriceId = config.getEnv("SUBSCRIPTION_PRICE_ID");
 export const subscriptionTrialPeriodDays = config.getEnv("SUBSCRIPTION_TRIAL_PERIOD_DAYS");
 export const stripeWebhookSecret = config.getEnv("STRIPE_WEBHOOK_SECRET");
