@@ -16,9 +16,8 @@ const subscriptionSchema = new Schema<SubscriberTypes>(
         billingAddress: { type: Map, of: String, required: true },
         subscriptionStartDate: { type: Date, default: Date.now, required: true },
         subscriptionEndDate: { type: Date, required: true },
-        trialStartDate: { type: Date, required: true }, // Added field for trial start date
-        trialEndDate: { type: Date, required: true }, // Added field for trial end date
-        isTrial: { type: Boolean, default: true, required: true }, // Added field to indicate if it's a trial
+        trialStartDate: { type: Date, required: true },
+        trialEndDate: { type: Date, required: true },
     },
     { timestamps: true }
 );

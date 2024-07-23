@@ -123,11 +123,8 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
     const customer: any = await myStripe.customers.retrieve(subscription.customer);
 
     if (!customer) return next(createHttpError(404, "Customer Not Found"));
-
-    const trialDays = 7;
-    const trialStartDate = new Date(subscription.trial_start * 1000);
-    const trialEndDate = new Date(trialStartDate);
-    trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+    const trialStartDate = subscription.trial_start ? new Date(subscription.trial_start * 1000) : null;
+    const trialEndDate = trialStartDate ? new Date(trialStartDate.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
 
     const subscriptionData = {
         user: customer.metadata.userId,
@@ -143,7 +140,6 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             : new Map(),
         trialStartDate: trialStartDate,
         trialEndDate: trialEndDate,
-        isTrial: subscription.status === "trialing",
     };
 
     switch (event.type) {
@@ -154,7 +150,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             }
             const createUser = await User.findByIdAndUpdate(customer.metadata.userId, {
                 "subscription.paid_sub": true,
-                "subscription.subscriptionCollectionId": newSubscription._id,
+                "subscription.subscriberId": newSubscription._id,
             });
             if (!createUser) return next(createHttpError(500, "Error Occurred While Updating User"));
             return res.status(201).json({ success: true, message: "Subscription Created" });
