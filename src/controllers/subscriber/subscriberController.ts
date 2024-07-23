@@ -96,6 +96,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         event = await myStripe.webhooks.constructEvent(payload, signature, stripeWebhookSecret);
         console.log("event of stripe ", event);
     } catch (err: any) {
+        console.log("webhook full error ");
         return next(createHttpError(400, `Webhook Error: ${err.message}`));
     }
 
