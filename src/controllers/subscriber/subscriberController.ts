@@ -89,7 +89,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
     console.log("i am called from stripe");
     const rawBody = req.body;
     const stringBody = JSON.stringify(rawBody);
-    const bufferBody = Buffer.from(stringBody, "utf8");
+    const bufferBody = Buffer.from(stringBody, "utf-8");
 
     const signature = req.headers["stripe-signature"];
     console.log("raw body of stripe ", rawBody);
