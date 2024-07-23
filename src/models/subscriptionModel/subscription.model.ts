@@ -10,7 +10,6 @@ const subscriptionSchema = new Schema<SubscriberTypes>(
         priceId: { type: String },
         subscriptionStatus: {
             type: String,
-            enum: ["paid", "past_due", "canceled", "unpaid", "active"],
         },
         billingAddress: { type: Map, of: String },
         subscriptionStartDate: { type: Date, default: Date.now },
