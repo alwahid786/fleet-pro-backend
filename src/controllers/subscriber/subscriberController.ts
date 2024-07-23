@@ -131,7 +131,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
         paymentMethod: [subscription.default_payment_method],
-        priceId: subscription.items.data[0].price.id,
+        priceId: subscription.items?.data[0]?.price?.id,
         subscriptionStatus: statusMapping[subscription.status] || "pending",
         subscriptionStartDate: new Date(subscription.current_period_start * 1000),
         subscriptionEndDate: new Date(subscription.current_period_end * 1000),
