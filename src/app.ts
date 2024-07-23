@@ -29,11 +29,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(morgan("dev"));
-app.use(express.json());
+// app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
-    bodyParser.json({
+    express.json({
         verify: function (req: any, res, buf) {
             req.rawBody = buf;
         },
