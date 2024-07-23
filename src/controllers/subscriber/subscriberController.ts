@@ -14,6 +14,16 @@ import Subscriber from "../../models/subscriptionModel/subscription.model.js";
 import { User } from "../../models/userModel/user.model.js";
 import { TryCatch } from "../../utils/tryCatch.js";
 
+const statusMapping: { [key: string]: string } = {
+    incomplete: "pending",
+    incomplete_expired: "expired",
+    trialing: "trial",
+    active: "active",
+    past_due: "past_due",
+    canceled: "canceled",
+    unpaid: "unpaid",
+};
+
 // http://localhost:8000/api/v1/subscription/create-session  Add New Subscription
 // -----------------------------------------------------------------------------
 
@@ -78,6 +88,10 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
         ],
         metadata: { userId },
         customer: customer.id,
+        subscription_data: {
+            trial_period_days: Number(subscriptionTrialPeriodDays) || 7,
+            trial_end: Date.now() + Number(subscriptionTrialPeriodDays) * 24 * 60 * 60 * 1000,
+        },
     });
     res.status(200).json({ success: true, sessionId: session.id });
 });
@@ -110,15 +124,26 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
 
     if (!customer) return next(createHttpError(404, "Customer Not Found"));
 
+    const trialDays = 7;
+    const trialStartDate = new Date(subscription.trial_start * 1000);
+    const trialEndDate = new Date(trialStartDate);
+    trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+
     const subscriptionData = {
         user: customer.metadata.userId,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
-        paymentMethod: subscription.default_payment_method,
+        paymentMethod: [subscription.default_payment_method],
         priceId: subscription.items.data[0].price.id,
-        subscriptionStatus: subscription.status,
+        subscriptionStatus: statusMapping[subscription.status] || "pending",
         subscriptionStartDate: new Date(subscription.current_period_start * 1000),
         subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+        billingAddress: subscription.billing_details
+            ? new Map(Object.entries(subscription.billing_details))
+            : new Map(),
+        trialStartDate: trialStartDate,
+        trialEndDate: trialEndDate,
+        isTrial: subscription.status === "trialing",
     };
 
     switch (event.type) {
@@ -137,7 +162,10 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         case "customer.subscription.updated":
             const updateSubscription = await Subscriber.updateOne(
                 { stripeSubscriptionId: subscription.id },
-                { subscriptionStatus: subscription.status }
+                {
+                    subscriptionStatus: subscriptionData.subscriptionStatus,
+                    isTrial: subscription.status === "trialing",
+                }
             );
             if (!updateSubscription)
                 return next(createHttpError(500, "Error Occurred While Updating Subscription"));

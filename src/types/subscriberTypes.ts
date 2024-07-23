@@ -10,5 +10,8 @@ interface SubscriberTypes {
     billingAddress: object;
     subscriptionStartDate: Date;
     subscriptionEndDate: Date;
+    trialStartDate: Date;
+    trialEndDate: Date;
+    isTrial: boolean;
 }
 export default SubscriberTypes;
