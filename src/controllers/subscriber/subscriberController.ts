@@ -88,17 +88,12 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
 export const addNewSubscription = TryCatch(async (req, res, next) => {
     console.log("i am called from stripe");
     const signature = req.headers["stripe-signature"];
-    const payload = JSON.stringify(req.body, null, 2);
-    const header = myStripe.webhooks.generateTestHeaderString({
-        payload,
-        stripeWebhookSecret,
-    });
-    // const payload = req.rawBody;
+    const payload = req.body;
     console.log("raw body", payload);
     if (!signature) return next(createHttpError(400, "Signature Not Found"));
     let event;
     try {
-        event = await myStripe.webhooks.constructEvent(payload, header, stripeWebhookSecret);
+        event = await myStripe.webhooks.constructEvent(payload, signature, stripeWebhookSecret);
         console.log("event of stripe ", event);
     } catch (err: any) {
         return next(createHttpError(400, `Webhook Error: ${err.message}`));
