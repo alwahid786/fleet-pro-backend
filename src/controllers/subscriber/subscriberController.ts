@@ -90,7 +90,6 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
         customer: customer.id,
         subscription_data: {
             trial_period_days: Number(subscriptionTrialPeriodDays) || 7,
-            trial_end: Date.now() + Number(subscriptionTrialPeriodDays) * 24 * 60 * 60 * 1000,
         },
     });
     res.status(200).json({ success: true, sessionId: session.id });
