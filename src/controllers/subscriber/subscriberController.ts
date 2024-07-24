@@ -28,9 +28,10 @@ const statusMapping: { [key: string]: string } = {
 // -----------------------------------------------------------------------------
 
 export const createStripeSession = TryCatch(async (req, res, next) => {
-    const { email, _id: userId } = req.user;
+    const { _id: userId } = req.user;
+    const user = await User.findById(userId);
+    if (!user) return next(createHttpError(404, "User Not Found"));
     const { plan } = req.body; // Get the plan from the request body
-    if (!email || !userId) return next(createHttpError(400, "Please Login to create Subscription"));
     if (!plan) return next(createHttpError(400, "Please select a subscription plan"));
 
     let priceId;
@@ -47,7 +48,7 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
     let customer;
     // Check existing customer and retrieve if exist
     const isCustomerExist = await myStripe.customers.list({
-        email,
+        email: user.email,
         limit: 1,
     });
     if (isCustomerExist?.data?.length > 0) {
@@ -68,7 +69,9 @@ export const createStripeSession = TryCatch(async (req, res, next) => {
     } else {
         // Create a new customer if it does not exist
         customer = await myStripe.customers.create({
-            email,
+            name: `${user?.firstName} ${user?.lastName}`,
+            phone: user?.phoneNumber,
+            email: user.email,
             metadata: { userId },
         });
         if (!customer) return next(createHttpError(500, "Error Occurred While Creating Customer"));
