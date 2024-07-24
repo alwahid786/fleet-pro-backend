@@ -172,10 +172,6 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             );
             if (!deleteSubscription)
                 return next(createHttpError(500, "Error Occurred While Deleting Subscription"));
-            const deleteUser = await User.findByIdAndUpdate(subscription.metadata.userId, {
-                "subscription.paid_sub": false,
-            });
-            if (!deleteUser) return next(createHttpError(500, "Error Occurred While Updating User"));
             return res.status(200).json({ success: true, message: "Subscription Deleted" });
 
         case "customer.subscription.paused":
@@ -183,12 +179,9 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
                 { stripeSubscriptionId: subscription.id },
                 { subscriptionStatus: statusMapping[subscription.status] }
             );
-            if (!pauseSubscription)
+            if (!pauseSubscription) {
                 return next(createHttpError(500, "Error Occurred While Pausing Subscription"));
-            const pauseUser = await User.findByIdAndUpdate(subscription.metadata.userId, {
-                "subscription.paid_sub": false,
-            });
-            if (!pauseUser) return next(createHttpError(500, "Error Occurred While Updating User"));
+            }
             return res.status(200).json({ success: true, message: "Subscription Paused" });
 
         case "customer.subscription.resumed":
@@ -198,10 +191,6 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             );
             if (!resumeSubscription)
                 return next(createHttpError(500, "Error Occurred While Resuming Subscription"));
-            const resumeUser = await User.findByIdAndUpdate(subscription.metadata.userId, {
-                "subscription.paid_sub": true,
-            });
-            if (!resumeUser) return next(createHttpError(500, "Error Occurred While Updating User"));
             return res.status(200).json({ success: true, message: "Subscription Resumed" });
 
         case "customer.subscription.trial_will_end":
