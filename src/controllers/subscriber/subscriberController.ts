@@ -150,20 +150,16 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             if (!newSubscription) {
                 return next(createHttpError(500, "Error Occurred While Creating Subscription"));
             }
-            const createUser = await User.findByIdAndUpdate(customer.metadata.userId, {
-                "subscription.paid_sub": true,
-                "subscription.subscriberId": newSubscription._id,
+            const updateUser = await User.findByIdAndUpdate(customer.metadata.userId, {
+                subscriptionId: newSubscription._id,
             });
-            if (!createUser) return next(createHttpError(500, "Error Occurred While Updating User"));
+            if (!updateUser) return next(createHttpError(500, "Error Occurred While Updating User"));
             return res.status(201).json({ success: true, message: "Subscription Created" });
 
         case "customer.subscription.updated":
             const updateSubscription = await Subscriber.updateOne(
                 { stripeSubscriptionId: subscription.id },
-                {
-                    subscriptionStatus: subscriptionData.subscriptionStatus,
-                    isTrial: subscription.status === "trialing",
-                }
+                { subscriptionStatus: statusMapping[subscription.status] }
             );
             if (!updateSubscription)
                 return next(createHttpError(500, "Error Occurred While Updating Subscription"));
@@ -172,7 +168,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         case "customer.subscription.deleted":
             const deleteSubscription = await Subscriber.updateOne(
                 { stripeSubscriptionId: subscription.id },
-                { subscriptionStatus: "deleted" }
+                { subscriptionStatus: statusMapping[subscription.status] }
             );
             if (!deleteSubscription)
                 return next(createHttpError(500, "Error Occurred While Deleting Subscription"));
@@ -185,7 +181,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         case "customer.subscription.paused":
             const pauseSubscription = await Subscriber.updateOne(
                 { stripeSubscriptionId: subscription.id },
-                { subscriptionStatus: "paused" }
+                { subscriptionStatus: statusMapping[subscription.status] }
             );
             if (!pauseSubscription)
                 return next(createHttpError(500, "Error Occurred While Pausing Subscription"));
@@ -198,7 +194,7 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
         case "customer.subscription.resumed":
             const resumeSubscription = await Subscriber.updateOne(
                 { stripeSubscriptionId: subscription.id },
-                { subscriptionStatus: "active" }
+                { subscriptionStatus: statusMapping[subscription.status] }
             );
             if (!resumeSubscription)
                 return next(createHttpError(500, "Error Occurred While Resuming Subscription"));
@@ -208,6 +204,9 @@ export const addNewSubscription = TryCatch(async (req, res, next) => {
             if (!resumeUser) return next(createHttpError(500, "Error Occurred While Updating User"));
             return res.status(200).json({ success: true, message: "Subscription Resumed" });
 
+        case "customer.subscription.trial_will_end":
+            console.log("your trial period end after 3 days");
+        // TODO: Handle trial will end
         default:
             return res.status(400).json({ success: false, message: "Unhandled Event Type" });
     }

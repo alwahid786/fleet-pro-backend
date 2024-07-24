@@ -149,7 +149,6 @@ const verifyRegistration = TryCatch(async (req: Request<{}, {}, { token: string 
     await user.save();
     res.status(200).sendFile(path.join(__dirName, "../../../public/verifiedSuccess.html"));
 });
-
 // --------------------------
 // get verification url again
 // --------------------------
@@ -246,7 +245,6 @@ const getVerificationUrlAgain = TryCatch(async (req, res, next) => {
     }
     return res.status(200).json({ success: true, message: "A Verification Url is Sent to Your Email" });
 });
-
 //----------
 // login
 //----------
@@ -278,7 +276,7 @@ const login = TryCatch(async (req, res, next) => {
 //---------------
 const getMyProfile = TryCatch(async (req, res, next) => {
     const userId = req.user?._id;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate("subscriptionId");
     if (!user) return next(createHttpError(404, "User Not Found"));
     return res.status(200).json({ success: true, user });
 });

@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 interface UserTypes {
     firstName: string;
     lastName: string;
@@ -10,10 +12,7 @@ interface UserSchemaTypes extends UserTypes {
     _id: string;
     role: string;
     isVerified: boolean;
-    subscription: {
-        subscriberId: string;
-        paid_sub: boolean;
-    };
+    subscriptionId: Types.ObjectId;
     image: { url: string; public_id: string };
     createdAt: Date;
     updatedAt: Date;
