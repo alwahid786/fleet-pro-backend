@@ -6,6 +6,7 @@ import { Truck } from "../../models/truckModel/truck.model.js";
 import { DriverTypes, OptionalDriverTypes } from "../../types/driverTypes.js";
 import { getDataUri, removeFromCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
 import { TryCatch } from "../../utils/tryCatch.js";
+import { addNotificationInDb } from "../../utils/addNotification.js";
 
 //
 // Create a Driver

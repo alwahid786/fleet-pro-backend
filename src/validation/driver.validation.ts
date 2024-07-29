@@ -37,7 +37,6 @@ const updateDriverSanitizer = [
         .withMessage("Phone number must be a valid phone number"),
     body("fleetNumber").optional().isInt().withMessage("Fleet number must be a number"),
     body("licenseExpiry").optional().isDate().withMessage("License expiry must be a date"),
-    body("assignedTruck").optional().isMongoId().withMessage("Assigned truck must be a valid truck id"),
     body("removeAssignedTruck").optional().isMongoId().withMessage("Assigned truck must be a valid truck id"),
 ];
 

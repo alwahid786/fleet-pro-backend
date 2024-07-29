@@ -10,4 +10,9 @@ const emitEvent = async (event: string, user: string, data: any) => {
     io.to(socketUser).emit(event, data);
 };
 
-export { emitEvent, getSocketId };
+const emitNotification = async (event: string, user: string, data: any) => {
+    const socketUser = await getSocketId(user);
+    io.to(socketUser).emit(event, data);
+};
+
+export { emitEvent, getSocketId, emitNotification };

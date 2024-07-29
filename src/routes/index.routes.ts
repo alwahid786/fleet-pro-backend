@@ -6,6 +6,7 @@ import { adminRoutes } from "./adminRoutes/admin.routes.js";
 import { deviceRoutes } from "./deviceRoutes/device.routes.js";
 import { geoFneceRoutes } from "./geoFensRoutes/geoFens.routes.js";
 import { subscriptionRoutes } from "./subscriptionRoutes/subscription.routes.js";
+import { notificationRoutes } from "./notificationRoutes/notification.routes.js";
 
 export const allApiRoutes = (app: any) => {
     // user routes
@@ -31,4 +32,7 @@ export const allApiRoutes = (app: any) => {
 
     // subscription routes
     subscriptionRoutes(app);
+
+    // notification routes
+    notificationRoutes(app);
 };
