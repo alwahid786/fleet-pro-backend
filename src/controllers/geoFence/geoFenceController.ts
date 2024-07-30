@@ -40,12 +40,12 @@ const updateSingleGeoFences = TryCatch(async (req: Request, res, next) => {
     const ownerId = req.user?._id;
     const geoFenceId = req?.params?.geoFenceId;
     if (!isValidObjectId(geoFenceId)) return next(createHttpError(400, "Invalid GeoFence Id"));
-    const { name, status, startDate, endDate, alert } = req.body;
+    const { name, status, startDate, endDate, alert, area } = req.body;
     if (!name && !status && !startDate && !endDate && !alert)
         return next(createHttpError(400, "All Required fields are Not Provided!"));
     const geoFence = await GeoFence.findOneAndUpdate(
         { _id: geoFenceId, ownerId },
-        { name, status, startDate, endDate, alert },
+        { name, status, startDate, endDate, alert, area },
         { new: true }
     );
     if (!geoFence) return next(createHttpError(404, "GeoFence Not Found"));
